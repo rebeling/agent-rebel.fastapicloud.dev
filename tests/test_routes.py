@@ -10,7 +10,9 @@ from main import app
 class RouteTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
+        self.wiki_tmp = tempfile.TemporaryDirectory()
         os.environ["AGENT_REBEL_DB_PATH"] = f"{self.tmp.name}/agent_rebel.db"
+        os.environ["AGENT_REBEL_WIKI_DIR"] = self.wiki_tmp.name
         os.environ["AGENT_REBEL_EDITABLE"] = "true"
         self.client = TestClient(app)
         self.client.__enter__()
@@ -18,14 +20,16 @@ class RouteTest(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None, None, None)
         self.tmp.cleanup()
+        self.wiki_tmp.cleanup()
         os.environ.pop("AGENT_REBEL_DB_PATH", None)
+        os.environ.pop("AGENT_REBEL_WIKI_DIR", None)
         os.environ.pop("AGENT_REBEL_EDITABLE", None)
 
     def test_homepage_renders_agent_knowledge_base(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("The Agent Knowledge Base", response.text)
-        self.assertIn("A structured reference for understanding, designing, and evaluating AI agents.", response.text)
+        self.assertIn("The Agent Wiki", response.text)
+        self.assertIn("A practical map of agent concepts, types, capabilities, memory, protocols, evaluation, and failure modes.", response.text)
 
     def test_page_route_renders_markdown_and_relations(self):
         response = self.client.get("/wiki/strategies/retrieval-first")
@@ -98,11 +102,19 @@ Raw source material.
         sources = self.client.get("/sources")
         self.assertIn("Test Source", sources.text)
 
+    def test_download_zip_route(self):
+        response = self.client.get("/download-zip")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["content-type"], "application/zip")
+        self.assertIn("attachment; filename=the_agent_knowledge_base.zip", response.headers["content-disposition"])
+
 
 class ReadOnlyRouteTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
+        self.wiki_tmp = tempfile.TemporaryDirectory()
         os.environ["AGENT_REBEL_DB_PATH"] = f"{self.tmp.name}/agent_rebel.db"
+        os.environ["AGENT_REBEL_WIKI_DIR"] = self.wiki_tmp.name
         os.environ.pop("AGENT_REBEL_EDITABLE", None)
         self.client = TestClient(app)
         self.client.__enter__()
@@ -110,7 +122,9 @@ class ReadOnlyRouteTest(unittest.TestCase):
     def tearDown(self):
         self.client.__exit__(None, None, None)
         self.tmp.cleanup()
+        self.wiki_tmp.cleanup()
         os.environ.pop("AGENT_REBEL_DB_PATH", None)
+        os.environ.pop("AGENT_REBEL_WIKI_DIR", None)
 
     def test_page_keeps_disabled_edit_button(self):
         response = self.client.get("/")
@@ -128,6 +142,11 @@ class ReadOnlyRouteTest(unittest.TestCase):
     def test_edit_route_still_forbidden(self):
         response = self.client.get("/edit/index")
         self.assertEqual(response.status_code, 403)
+
+    def test_fastapi_docs_are_hidden_by_default(self):
+        self.assertEqual(self.client.get("/docs").status_code, 404)
+        self.assertEqual(self.client.get("/redoc").status_code, 404)
+        self.assertEqual(self.client.get("/openapi.json").status_code, 404)
 
 
 if __name__ == "__main__":

@@ -22,6 +22,10 @@ def init_db(conn: sqlite3.Connection) -> None:
             slug TEXT NOT NULL UNIQUE,
             title TEXT NOT NULL,
             page_type TEXT NOT NULL,
+            section TEXT,
+            section_title TEXT,
+            section_order INTEGER,
+            nav_order INTEGER,
             description TEXT NOT NULL,
             body_markdown TEXT NOT NULL,
             tags_json TEXT NOT NULL,
@@ -92,5 +96,19 @@ def init_db(conn: sqlite3.Connection) -> None:
         );
         """
     )
+    ensure_page_nav_columns(conn)
     seed_schema_rules(conn)
     conn.commit()
+
+
+def ensure_page_nav_columns(conn: sqlite3.Connection) -> None:
+    existing_columns = {row["name"] for row in conn.execute("PRAGMA table_info(pages)").fetchall()}
+    nav_columns = {
+        "section": "TEXT",
+        "section_title": "TEXT",
+        "section_order": "INTEGER",
+        "nav_order": "INTEGER",
+    }
+    for column, column_type in nav_columns.items():
+        if column not in existing_columns:
+            conn.execute(f"ALTER TABLE pages ADD COLUMN {column} {column_type}")

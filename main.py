@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.config import BASE_DIR, edits_enabled
+from app.config import BASE_DIR, docs_enabled, edits_enabled
 from app.db import connect, init_db
 from app.graph import graph_json
 from app.lint import lint_all, lint_for_page, lint_results
@@ -41,7 +41,14 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title=get_title(), version=get_version(), lifespan=lifespan)
+app = FastAPI(
+    title=get_title(),
+    version=get_version(),
+    lifespan=lifespan,
+    docs_url="/docs" if docs_enabled() else None,
+    redoc_url="/redoc" if docs_enabled() else None,
+    openapi_url="/openapi.json" if docs_enabled() else None,
+)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "app" / "static"), name="static")
 
 
@@ -132,6 +139,10 @@ def save_edited_page(
             slug=normalized,
             title=okf.title,
             page_type=okf.page_type,
+            section=okf.section,
+            section_title=okf.section_title,
+            section_order=okf.section_order,
+            nav_order=okf.nav_order,
             description=okf.description,
             tags=okf.tags,
             body_markdown=okf.body_markdown,
@@ -267,4 +278,26 @@ def graph_view(request: Request, conn=Depends(db)):
         request,
         "graph.html",
         {"graph": data, **sidebar_context(conn)},
+    )
+
+
+@app.get("/download-zip")
+def download_wiki_zip():
+    import io
+    import zipfile
+    from app.config import wiki_directory
+
+    wiki_dir = wiki_directory()
+    buffer = io.BytesIO()
+
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for file_path in sorted(wiki_dir.glob("**/*.md")):
+            rel_path = file_path.relative_to(wiki_dir)
+            zip_file.write(file_path, arcname=str(rel_path))
+
+    buffer.seek(0)
+    return StreamingResponse(
+        buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=the_agent_knowledge_base.zip"},
     )

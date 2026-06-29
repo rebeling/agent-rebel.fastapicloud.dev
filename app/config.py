@@ -17,3 +17,15 @@ def database_path() -> Path:
 def edits_enabled() -> bool:
     value = os.getenv("AGENT_REBEL_EDITABLE", "false").strip().lower()
     return value in {"1", "true", "yes", "on"}
+
+
+def docs_enabled() -> bool:
+    value = os.getenv("AGENT_REBEL_SHOW_DOCS", "false").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
+def wiki_directory() -> Path:
+    configured = os.getenv("AGENT_REBEL_WIKI_DIR")
+    if configured:
+        return Path(configured)
+    return BASE_DIR / "wiki"

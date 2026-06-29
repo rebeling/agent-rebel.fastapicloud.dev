@@ -30,15 +30,107 @@ def list_pages(conn: sqlite3.Connection) -> list[dict[str, Any]]:
 def grouped_pages(conn: sqlite3.Connection) -> dict[str, list[dict[str, Any]]]:
     groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for page in list_pages(conn):
-        group = page["slug"].split("/", 1)[0] if "/" in page["slug"] else page["page_type"]
+        group = sidebar_group_title(page)
         groups[group].append(page)
-    return dict(sorted(groups.items()))
+    sorted_groups = sorted(
+        groups.items(),
+        key=lambda item: (
+            min(sidebar_order_value(page.get("section_order")) for page in item[1]),
+            item[0].casefold(),
+        ),
+    )
+    return {
+        group: sorted(pages, key=lambda page: (sidebar_order_value(page.get("nav_order")), page["title"].casefold(), page["slug"]))
+        for group, pages in sorted_groups
+    }
+
+
+def sidebar_group_title(page: dict[str, Any]) -> str:
+    section_title = str(page.get("section_title") or "").strip()
+    if section_title:
+        return section_title
+    section = str(page.get("section") or "").strip()
+    if section:
+        return section
+    return page["slug"].split("/", 1)[0] if "/" in page["slug"] else page["page_type"]
+
+
+def sidebar_order_value(value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 999
 
 
 def get_page(conn: sqlite3.Connection, slug: str) -> dict[str, Any] | None:
     normalized = normalize_slug(slug)
+    from app.config import wiki_directory
+    from app.okf import parse_okf
+    file_path = wiki_directory() / f"{normalized}.md"
+    if not file_path.exists():
+        return None
+
+    try:
+        content = file_path.read_text(encoding="utf-8")
+        okf = parse_okf(content)
+    except Exception as e:
+        print(f"Error reading {file_path} from disk: {e}")
+        row = conn.execute("SELECT * FROM pages WHERE slug = ?", (normalized,)).fetchone()
+        return row_to_page(row) if row else None
+
     row = conn.execute("SELECT * FROM pages WHERE slug = ?", (normalized,)).fetchone()
-    return row_to_page(row) if row else None
+    if not row:
+        saved = save_page(
+            conn,
+            slug=normalized,
+            title=okf.title,
+            page_type=okf.page_type,
+            section=okf.section,
+            section_title=okf.section_title,
+            section_order=okf.section_order,
+            nav_order=okf.nav_order,
+            description=okf.description,
+            body_markdown=okf.body_markdown,
+            tags=okf.tags,
+            change_summary="Imported new file from disk on request.",
+            actor="system",
+            write_to_disk=False,
+        )
+        conn.commit()
+        return saved
+
+    db_page = row_to_page(row)
+    if (
+        db_page["title"] != okf.title
+        or db_page["page_type"] != okf.page_type
+        or db_page.get("section") != okf.section
+        or db_page.get("section_title") != okf.section_title
+        or db_page.get("section_order") != okf.section_order
+        or db_page.get("nav_order") != okf.nav_order
+        or db_page["description"] != okf.description
+        or db_page["body_markdown"] != okf.body_markdown
+        or db_page["tags"] != okf.tags
+    ):
+        saved = save_page(
+            conn,
+            slug=normalized,
+            title=okf.title,
+            page_type=okf.page_type,
+            section=okf.section,
+            section_title=okf.section_title,
+            section_order=okf.section_order,
+            nav_order=okf.nav_order,
+            description=okf.description,
+            body_markdown=okf.body_markdown,
+            tags=okf.tags,
+            change_summary="Synced disk file modification on request.",
+            actor="system",
+            write_to_disk=False,
+        )
+        conn.commit()
+        return saved
+
+    return db_page
 
 
 def known_slugs(conn: sqlite3.Connection) -> set[str]:
@@ -55,30 +147,81 @@ def save_page(
     body_markdown: str,
     tags: list[str] | str,
     change_summary: str,
+    section: str | None = None,
+    section_title: str | None = None,
+    section_order: int | None = None,
+    nav_order: int | None = None,
     actor: str = "human",
+    write_to_disk: bool = True,
 ) -> dict[str, Any]:
     normalized = normalize_slug(slug)
     tags_json = encode_tags(tags)
+
+    if write_to_disk:
+        from app.config import wiki_directory
+        from app.okf import page_to_okf
+        tags_list = json.loads(tags_json)
+        page_dict = {
+            "title": title,
+            "page_type": page_type,
+            "section": clean_optional_string(section),
+            "section_title": clean_optional_string(section_title),
+            "section_order": clean_optional_int(section_order),
+            "nav_order": clean_optional_int(nav_order),
+            "description": description,
+            "tags": tags_list,
+            "body_markdown": body_markdown,
+        }
+        okf_str = page_to_okf(page_dict)
+        file_path = wiki_directory() / f"{normalized}.md"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text(okf_str, encoding="utf-8")
     existing = conn.execute("SELECT * FROM pages WHERE slug = ?", (normalized,)).fetchone()
     if existing:
         page_id = existing["id"]
         conn.execute(
             """
             UPDATE pages
-            SET title = ?, page_type = ?, description = ?, body_markdown = ?,
+            SET title = ?, page_type = ?, section = ?, section_title = ?,
+                section_order = ?, nav_order = ?, description = ?, body_markdown = ?,
                 tags_json = ?, updated_at = datetime('now')
             WHERE id = ?
             """,
-            (title.strip(), page_type.strip(), description.strip(), body_markdown, tags_json, page_id),
+            (
+                title.strip(),
+                page_type.strip(),
+                clean_optional_string(section),
+                clean_optional_string(section_title),
+                clean_optional_int(section_order),
+                clean_optional_int(nav_order),
+                description.strip(),
+                body_markdown,
+                tags_json,
+                page_id,
+            ),
         )
         operation = "edit"
     else:
         cursor = conn.execute(
             """
-            INSERT INTO pages (slug, title, page_type, description, body_markdown, tags_json)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO pages (
+                slug, title, page_type, section, section_title, section_order,
+                nav_order, description, body_markdown, tags_json
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (normalized, title.strip(), page_type.strip(), description.strip(), body_markdown, tags_json),
+            (
+                normalized,
+                title.strip(),
+                page_type.strip(),
+                clean_optional_string(section),
+                clean_optional_string(section_title),
+                clean_optional_int(section_order),
+                clean_optional_int(nav_order),
+                description.strip(),
+                body_markdown,
+                tags_json,
+            ),
         )
         page_id = cursor.lastrowid
         operation = "create"
@@ -113,6 +256,22 @@ def save_page(
         summary=change_summary.strip() or f"{operation.title()} page.",
     )
     return get_page(conn, normalized) or {}
+
+
+def clean_optional_string(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = str(value).strip()
+    return cleaned or None
+
+
+def clean_optional_int(value: int | str | None) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def next_revision_number(conn: sqlite3.Connection, page_id: int) -> int:

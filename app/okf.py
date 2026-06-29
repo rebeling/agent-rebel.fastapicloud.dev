@@ -15,6 +15,10 @@ class OKFDocument:
     description: str
     tags: list[str]
     body_markdown: str
+    section: str | None = None
+    section_title: str | None = None
+    section_order: int | None = None
+    nav_order: int | None = None
 
 
 @dataclass(frozen=True)
@@ -27,11 +31,21 @@ class OKFSource:
 def page_to_okf(page: dict[str, Any]) -> str:
     tags = page.get("tags", [])
     tag_lines = "\n".join(f"  - {tag}" for tag in tags)
-    return "\n".join(
+    lines = [
+        "---",
+        f"title: {page.get('title', '')}",
+        f"type: {page.get('page_type', '')}",
+    ]
+    if page.get("section") is not None:
+        lines.append(f"section: {page.get('section', '')}")
+    if page.get("section_title") is not None:
+        lines.append(f"section_title: {page.get('section_title', '')}")
+    if page.get("section_order") is not None:
+        lines.append(f"section_order: {page.get('section_order')}")
+    if page.get("nav_order") is not None:
+        lines.append(f"nav_order: {page.get('nav_order')}")
+    lines.extend(
         [
-            "---",
-            f"title: {page.get('title', '')}",
-            f"type: {page.get('page_type', '')}",
             f"description: {page.get('description', '')}",
             "tags:",
             tag_lines,
@@ -41,6 +55,7 @@ def page_to_okf(page: dict[str, Any]) -> str:
             "",
         ]
     )
+    return "\n".join(lines)
 
 
 def new_page_okf(slug: str) -> str:
@@ -80,6 +95,10 @@ def parse_okf(document: str) -> OKFDocument:
         description=str(metadata["description"]).strip(),
         tags=[tag.strip() for tag in tags],
         body_markdown=body.strip(),
+        section=optional_string(metadata.get("section")),
+        section_title=optional_string(metadata.get("section_title")),
+        section_order=optional_int(metadata.get("section_order")),
+        nav_order=optional_int(metadata.get("nav_order")),
     )
 
 
@@ -152,3 +171,19 @@ def clean_scalar(value: str) -> str:
     if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
         return value[1:-1]
     return value
+
+
+def optional_string(value: Any) -> str | None:
+    if value is None or isinstance(value, list):
+        return None
+    cleaned = str(value).strip()
+    return cleaned or None
+
+
+def optional_int(value: Any) -> int | None:
+    if value is None or isinstance(value, list):
+        return None
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None

@@ -3,6 +3,8 @@ import re
 
 from app.wikilinks import WIKILINK_RE, normalize_slug
 
+BARE_URL_RE = re.compile(r'(?<!["\'=])(https?://[^\s<>\]]+)')
+
 
 def render_markdown(markdown: str, known_slugs: set[str]) -> str:
     lines = markdown.splitlines()
@@ -67,6 +69,12 @@ def render_markdown(markdown: str, known_slugs: set[str]) -> str:
 
 def render_inline(text: str, known_slugs: set[str]) -> str:
     escaped = html.escape(text)
+    placeholders: list[tuple[str, str]] = []
+
+    def stash(rendered: str) -> str:
+        token = f"@@INLINE_{len(placeholders)}@@"
+        placeholders.append((token, rendered))
+        return token
 
     def wikilink(match: re.Match[str]) -> str:
         raw_target = html.unescape(match.group(1))
@@ -78,12 +86,30 @@ def render_inline(text: str, known_slugs: set[str]) -> str:
         class_name = "wiki-link" if slug in known_slugs else "wiki-link broken-link"
         return f'<a class="{class_name}" href="/wiki/{html.escape(slug)}">{html.escape(label)}</a>'
 
-    escaped = WIKILINK_RE.sub(wikilink, escaped)
-    escaped = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
-    escaped = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = re.sub(r"`([^`]+)`", lambda match: stash(f"<code>{match.group(1)}</code>"), escaped)
+    escaped = WIKILINK_RE.sub(lambda match: stash(wikilink(match)), escaped)
     escaped = re.sub(
         r"\[([^\]]+)\]\((https?://[^)\s]+)\)",
-        r'<a href="\2" rel="noreferrer">\1</a>',
+        lambda match: stash(
+            f'<a href="{html.escape(match.group(2))}" rel="noreferrer">{html.escape(match.group(1))}</a>'
+        ),
         escaped,
     )
+    escaped = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = BARE_URL_RE.sub(lambda match: linkify_bare_url(match.group(1)), escaped)
+
+    for token, rendered in placeholders:
+        escaped = escaped.replace(token, rendered)
+
     return escaped
+
+
+def linkify_bare_url(url: str) -> str:
+    trailing = ""
+    while url and url[-1] in ".,;:!?":
+        trailing = url[-1] + trailing
+        url = url[:-1]
+    while url.endswith(")") and url.count("(") < url.count(")"):
+        trailing = ")" + trailing
+        url = url[:-1]
+    return f'<a href="{html.escape(url)}" rel="noreferrer">{html.escape(url)}</a>{trailing}'

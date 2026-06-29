@@ -6,7 +6,8 @@ from app.config import edits_enabled
 from app.db import connect, init_db
 from app.graph import graph_json
 from app.lint import lint_all, lint_results
-from app.repository import backlinks, get_page, outgoing_links, revisions, save_page
+from app.markdown import render_markdown
+from app.repository import backlinks, get_page, grouped_pages, outgoing_links, revisions, save_page
 from app.seed import seed_if_empty
 from app.okf import OKFError, page_to_okf, parse_okf, parse_source_okf
 from app.wikilinks import extract_wikilinks, normalize_slug
@@ -15,7 +16,9 @@ from app.wikilinks import extract_wikilinks, normalize_slug
 class WikiCoreTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
+        self.wiki_tmp = tempfile.TemporaryDirectory()
         os.environ["AGENT_REBEL_DB_PATH"] = f"{self.tmp.name}/agent_rebel.db"
+        os.environ["AGENT_REBEL_WIKI_DIR"] = self.wiki_tmp.name
         self.conn = connect()
         init_db(self.conn)
         seed_if_empty(self.conn)
@@ -23,29 +26,30 @@ class WikiCoreTest(unittest.TestCase):
     def tearDown(self):
         self.conn.close()
         self.tmp.cleanup()
+        self.wiki_tmp.cleanup()
         os.environ.pop("AGENT_REBEL_DB_PATH", None)
+        os.environ.pop("AGENT_REBEL_WIKI_DIR", None)
 
     def test_seed_creates_index_and_links(self):
         page = get_page(self.conn, "index")
         self.assertIsNotNone(page)
-        self.assertEqual(page["title"], "The Agent Knowledge Base")
+        self.assertEqual(page["title"], "The Agent Wiki")
         links = outgoing_links(self.conn, page["id"])
         self.assertGreaterEqual(len(links), 8)
         self.assertFalse(any(link["is_broken"] for link in links))
 
     def test_seed_explains_okf_workflow(self):
-        self.assertIsNotNone(get_page(self.conn, "concepts/okf-wiki"))
-        self.assertIsNotNone(get_page(self.conn, "guides/ingest-query-lint"))
-        self.assertIsNotNone(get_page(self.conn, "protocols/agent-protocols"))
-        self.assertIsNotNone(get_page(self.conn, "capabilities/core-agent-capabilities"))
-        self.assertIsNotNone(get_page(self.conn, "memory/context-and-memory"))
-        self.assertIsNotNone(get_page(self.conn, "decisions/use-okf"))
-        self.assertIsNotNone(get_page(self.conn, "evaluation/agent-evaluation"))
-        self.assertIsNotNone(get_page(self.conn, "failures/agent-failure-modes"))
+        self.assertIsNotNone(get_page(self.conn, "knowledge/okf-and-rag"))
+        self.assertIsNotNone(get_page(self.conn, "meta/wiki-workflow"))
+        self.assertIsNotNone(get_page(self.conn, "protocols/protocols-overview"))
+        self.assertIsNotNone(get_page(self.conn, "capabilities/capabilities-overview"))
+        self.assertIsNotNone(get_page(self.conn, "memory/context-vs-memory"))
+        self.assertIsNotNone(get_page(self.conn, "meta/use-okf"))
+        self.assertIsNotNone(get_page(self.conn, "evaluation/evaluation-overview"))
+        self.assertIsNotNone(get_page(self.conn, "failures/failure-modes-overview"))
         self.assertIsNotNone(get_page(self.conn, "tools/qdrant"))
         self.assertIsNotNone(get_page(self.conn, "tools/cognee"))
-        self.assertIsNotNone(get_page(self.conn, "concepts/illusion-of-agents"))
-        self.assertIsNotNone(get_page(self.conn, "patterns/streaming-and-thinking"))
+        self.assertIsNotNone(get_page(self.conn, "basics/the-illusion-of-agents"))
         self.assertIsNotNone(get_page(self.conn, "meta/self-describing-wiki"))
 
     def test_wikilink_extraction_and_slug_safety(self):
@@ -54,6 +58,21 @@ class WikiCoreTest(unittest.TestCase):
         self.assertEqual(normalize_slug("Strategies Retrieval First"), "strategies-retrieval-first")
         with self.assertRaises(ValueError):
             normalize_slug("../secret")
+
+    def test_render_markdown_linkifies_bare_urls(self):
+        html = render_markdown(
+            "Visit https://example.com, [Docs](https://docs.example.com), and `https://code.example.com`.",
+            set(),
+        )
+        self.assertIn(
+            '<a href="https://example.com" rel="noreferrer">https://example.com</a>,',
+            html,
+        )
+        self.assertIn(
+            '<a href="https://docs.example.com" rel="noreferrer">Docs</a>',
+            html,
+        )
+        self.assertIn("<code>https://code.example.com</code>", html)
 
     def test_okf_parse_and_serialize(self):
         page = get_page(self.conn, "strategies/retrieval-first")
@@ -64,6 +83,62 @@ class WikiCoreTest(unittest.TestCase):
         self.assertIn("retrieval", parsed.tags)
         with self.assertRaises(OKFError):
             parse_okf("# Missing frontmatter")
+
+    def test_okf_parse_keeps_navigation_metadata(self):
+        parsed = parse_okf(
+            """---
+title: Ordered Page
+type: guide
+section: Start
+section_title: Start
+section_order: 1
+nav_order: 2
+description: A page with sidebar metadata.
+tags:
+  - test
+---
+
+# Ordered Page
+"""
+        )
+        self.assertEqual(parsed.section, "Start")
+        self.assertEqual(parsed.section_title, "Start")
+        self.assertEqual(parsed.section_order, 1)
+        self.assertEqual(parsed.nav_order, 2)
+
+    def test_grouped_pages_uses_frontmatter_navigation_order(self):
+        save_page(
+            self.conn,
+            slug="ordered/later",
+            title="Later",
+            page_type="guide",
+            section="Ordered",
+            section_title="Ordered",
+            section_order=-1,
+            nav_order=2,
+            description="Second ordered page.",
+            tags=["test"],
+            body_markdown="# Later",
+            change_summary="Create later ordered page.",
+        )
+        save_page(
+            self.conn,
+            slug="ordered/earlier",
+            title="Earlier",
+            page_type="guide",
+            section="Ordered",
+            section_title="Ordered",
+            section_order=-1,
+            nav_order=1,
+            description="First ordered page.",
+            tags=["test"],
+            body_markdown="# Earlier",
+            change_summary="Create earlier ordered page.",
+        )
+        groups = grouped_pages(self.conn)
+        first_group = next(iter(groups.items()))
+        self.assertEqual(first_group[0], "Ordered")
+        self.assertEqual([page["title"] for page in first_group[1]], ["Earlier", "Later"])
 
     def test_source_okf_parse(self):
         source = parse_source_okf(
@@ -84,7 +159,7 @@ Raw material.
         self.assertFalse(edits_enabled())
 
     def test_backlinks_are_available(self):
-        target = get_page(self.conn, "strategies/retrieval-first")
+        target = get_page(self.conn, "basics/what-is-an-agent")
         incoming = backlinks(self.conn, target["id"])
         incoming_slugs = {link["from_slug"] for link in incoming}
         self.assertIn("index", incoming_slugs)
