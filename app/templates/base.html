@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Agent Rebel{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/">
+        <span class="brand-title">Agent Rebel</span>
+        <span class="brand-subtitle">Strategy, knowledge, and failure modes for AI agents</span>
+      </a>
+      <form class="search" action="/" method="get">
+        <input name="q" value="{{ q or '' }}" placeholder="Search wiki">
+      </form>
+      <nav class="utility-nav" aria-label="Wiki tools">
+        <a href="/lint">Lint</a>
+        <a href="/log">Log</a>
+        <a href="/sources">Sources</a>
+        <a href="/graph">Graph</a>
+      </nav>
+      <div class="sidebar-actions" aria-label="Sidebar controls">
+        <button class="sidebar-text-control" type="button" data-sidebar-open="all">Open all</button>
+        <button class="sidebar-text-control" type="button" data-sidebar-open="none">Close all</button>
+      </div>
+      <div class="wiki-nav">
+        {% for group, pages in groups.items() %}
+          <details class="nav-group" open>
+            <summary>{{ group }}</summary>
+            {% for item in pages %}
+              <a href="/wiki/{{ item.slug }}">{{ item.title }}</a>
+            {% endfor %}
+          </details>
+        {% endfor %}
+      </div>
+    </aside>
+    <main class="content">
+      <div class="content-inner">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+    {% block page_scripts %}{% endblock %}
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

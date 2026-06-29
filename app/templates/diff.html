@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Diff {{ page.title }} - Agent Rebel{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <div>
+      <p class="type">diff</p>
+      <h1>{{ page.title }}</h1>
+      <p class="description">Revision {{ revision_number }} compared to current.</p>
+    </div>
+  </header>
+  <pre class="diff">{{ diff }}</pre>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}History {{ page.title }} - Agent Rebel{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <div>
+      <p class="type">history</p>
+      <h1>{{ page.title }}</h1>
+      <p class="description">{{ page.slug }}</p>
+    </div>
+    <div class="actions">
+      <a class="button secondary" href="/wiki/{{ page.slug }}">Back to page</a>
+    </div>
+  </header>
+  <table>
+    <thead><tr><th>Revision</th><th>Time</th><th>Summary</th><th></th></tr></thead>
+    <tbody>
+      {% for revision in revisions %}
+        <tr>
+          <td>{{ revision.revision_number }}</td>
+          <td>{{ revision.created_at }}</td>
+          <td>{{ revision.change_summary }}</td>
+          <td><a href="/diff/{{ revision.revision_number }}/{{ page.slug }}">Diff</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

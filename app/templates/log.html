@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Log - Agent Rebel{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <div>
+      <p class="type">log</p>
+      <h1>Operation Log</h1>
+      <p class="description">Chronological record of edits, ingests, and lint runs.</p>
+    </div>
+  </header>
+  <table>
+    <thead><tr><th>Time</th><th>Operation</th><th>Target</th><th>Actor</th><th>Summary</th></tr></thead>
+    <tbody>
+      {% for entry in entries %}
+        <tr>
+          <td>{{ entry.created_at }}</td>
+          <td>{{ entry.operation }}</td>
+          <td>{{ entry.target_type }}: {{ entry.target_slug }}</td>
+          <td>{{ entry.actor }}</td>
+          <td>{{ entry.summary }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

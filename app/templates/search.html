@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Search - Agent Rebel{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <div>
+      <p class="type">query</p>
+      <h1>Search</h1>
+      <p class="description">Results for "{{ q }}".</p>
+    </div>
+  </header>
+  {% for page in results %}
+    <section class="search-result">
+      <h2><a href="/wiki/{{ page.slug }}">{{ page.title }}</a></h2>
+      <p>{{ page.description }}</p>
+      <p class="muted">{{ page.slug }}</p>
+    </section>
+  {% else %}
+    <p class="muted">No matching pages.</p>
+  {% endfor %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} - Agent Rebel{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <div>
+      <p class="type">{{ page.page_type }}</p>
+      <h1>{{ page.title }}</h1>
+      <p class="description">{{ page.description }}</p>
+      <div class="tags">
+        {% for tag in page.tags %}
+          <span>{{ tag }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="actions">
+      {% if edits_enabled %}
+        <a class="button" href="/edit/{{ page.slug }}">Edit</a>
+      {% else %}
+        <button class="button" type="button" disabled title="Editing is disabled">Edit</button>
+      {% endif %}
+      <a class="button secondary" href="/history/{{ page.slug }}">History</a>
+    </div>
+  </header>
+
+  {% if lint %}
+    <section class="notice">
+      <h2>Validation</h2>
+      {% for item in lint %}
+        <p class="{{ item.severity }}">{{ item.message }}</p>
+      {% endfor %}
+    </section>
+  {% endif %}
+
+  <article class="markdown page-surface">{{ body_html | safe }}</article>
+
+  <section class="relations">
+    <div class="relation-panel">
+      <h2>Outgoing Links</h2>
+      {% if outgoing_links %}
+        {% for link in outgoing_links %}
+          <p>
+            {% if link.is_broken %}
+              <span class="broken-link">[[{{ link.target_slug }}]]</span>
+            {% else %}
+              <a href="/wiki/{{ link.target_slug }}">{{ link.target_title }}</a>
+            {% endif %}
+          </p>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No outgoing links yet.</p>
+      {% endif %}
+    </div>
+    <div class="relation-panel">
+      <h2>Backlinks</h2>
+      {% if backlinks %}
+        {% for link in backlinks %}
+          <p><a href="/wiki/{{ link.from_slug }}">{{ link.from_title }}</a></p>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No backlinks yet.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

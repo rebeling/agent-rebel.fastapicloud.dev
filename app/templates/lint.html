@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Lint - Agent Rebel{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <div>
+      <p class="type">lint</p>
+      <h1>Lint Report</h1>
+      <p class="description">Validation errors are visible. Broken links are warnings, not fatal errors.</p>
+    </div>
+  </header>
+  {% if results %}
+    <table>
+      <thead><tr><th>Severity</th><th>Page</th><th>Code</th><th>Message</th></tr></thead>
+      <tbody>
+        {% for item in results %}
+          <tr>
+            <td class="{{ item.severity }}">{{ item.severity }}</td>
+            <td><a href="/wiki/{{ item.target_slug }}">{{ item.target_slug }}</a></td>
+            <td>{{ item.code }}</td>
+            <td>{{ item.message }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No lint findings.</p>
+  {% endif %}
+{% endblock %}

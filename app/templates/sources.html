@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Sources - Agent Rebel{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <div>
+      <p class="type">ingest</p>
+      <h1>Sources</h1>
+      <p class="description">Immutable-ish raw material. MVP stores it; no LLM generation runs yet.</p>
+    </div>
+  </header>
+  <form class="editor compact" action="/sources" method="post">
+    {% if errors %}
+      <section class="notice">
+        <h2>Source OKF validation</h2>
+        {% for error in errors %}
+          <p class="error">{{ error }}</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+    <label>
+      Source OKF
+      <textarea class="okf-editor source-okf-editor" name="document" required {% if not edits_enabled %}disabled{% endif %}>{{ source_document }}</textarea>
+    </label>
+    <button class="button" type="submit" {% if not edits_enabled %}disabled title="Source ingest is disabled"{% endif %}>Ingest Source</button>
+  </form>
+  <table>
+    <thead><tr><th>Slug</th><th>Title</th><th>Type</th><th>Created</th></tr></thead>
+    <tbody>
+      {% for source in sources %}
+        <tr>
+          <td>{{ source.slug }}</td>
+          <td>{{ source.title }}</td>
+          <td>{{ source.source_type }}</td>
+          <td>{{ source.created_at }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
