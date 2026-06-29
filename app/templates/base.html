@@ -3,20 +3,19 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}The Agent Knowledge Base{% endblock %}</title>
+    <title>{% block title %}The Agent Wiki{% endblock %}</title>
     <link rel="stylesheet" href="/static/styles.css">
   </head>
   <body>
     <aside class="sidebar">
       <div class="sidebar-header">
         <a class="brand" href="/">
-          <span class="brand-title">The Agent Knowledge Base</span>
-          <span class="brand-subtitle">A structured reference for understanding, designing, and evaluating AI agents.</span>
+          <span class="brand-title">The Agent Wiki</span>
+          <span class="brand-subtitle">A practical map of agent concepts, types, capabilities, memory, protocols, evaluation, and failure modes.</span>
         </a>
         <div class="shell-controls">
           <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="true" aria-label="Switch to light theme">
             <i class="icon" data-theme-icon data-lucide="moon" aria-hidden="true"></i>
-            <span class="theme-toggle-label" data-theme-label>Dark</span>
           </button>
           <button class="menu-toggle" type="button" data-menu-toggle aria-controls="sidebar-menu" aria-expanded="false" aria-label="Open navigation">
             <i class="icon" data-menu-icon data-lucide="menu" aria-hidden="true"></i>
@@ -32,19 +31,26 @@
           <a href="/log"><i class="icon" data-lucide="scroll-text" aria-hidden="true"></i><span>Log</span></a>
           <a href="/sources"><i class="icon" data-lucide="archive" aria-hidden="true"></i><span>Sources</span></a>
           <a href="/graph"><i class="icon" data-lucide="network" aria-hidden="true"></i><span>Graph</span></a>
+          <a href="/download-zip"><i class="icon" data-lucide="download" aria-hidden="true"></i><span>Download ZIP</span></a>
         </nav>
-        <div class="sidebar-actions" aria-label="Sidebar controls">
-          <button class="sidebar-text-control" type="button" data-sidebar-open="all"><i class="icon" data-lucide="chevrons-down-up" aria-hidden="true"></i><span>Open all</span></button>
-          <button class="sidebar-text-control" type="button" data-sidebar-open="none"><i class="icon" data-lucide="chevrons-up-down" aria-hidden="true"></i><span>Close all</span></button>
+        <div class="sidebar-toggle-row">
+          <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-pressed="true" aria-label="Close all" title="Close all">
+            <i class="icon" data-sidebar-icon data-lucide="chevrons-up-down" aria-hidden="true"></i>
+          </button>
         </div>
         <div class="wiki-nav">
           {% for group, pages in groups.items() %}
-            <details class="nav-group" open>
-              <summary>{{ group }}</summary>
-              {% for item in pages %}
-                <a href="/wiki/{{ item.slug }}">{{ item.title }}</a>
-              {% endfor %}
-            </details>
+            {% if pages|length == 1 %}
+              {% set item = pages[0] %}
+              <a class="nav-single" href="/wiki/{{ item.slug }}">{{ item.title }}</a>
+            {% else %}
+              <details class="nav-group" open>
+                <summary>{{ group }}</summary>
+                {% for item in pages %}
+                  <a href="/wiki/{{ item.slug }}">{{ item.title }}</a>
+                {% endfor %}
+              </details>
+            {% endif %}
           {% endfor %}
         </div>
       </div>

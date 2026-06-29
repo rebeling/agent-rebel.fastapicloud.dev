@@ -1,0 +1,46 @@
+# The Agent Wiki — compact clean structure
+
+This starter intentionally uses only four visible groups:
+
+- start: first reading path and decision checklist
+- design: core concepts needed to design an agent
+- operate: evaluation, failure modes, and the coding-agent use case
+- reference: sources and the LLM Wiki and OKF
+
+The goal is to avoid a sidebar full of tiny categories. Add new pages only when an existing page becomes too dense.
+
+Navigation ordering
+-------------------
+Pages now include explicit navigation metadata in YAML frontmatter:
+
+- section: display group name, e.g. Start, Design, Operate, Reference
+- section_title: display title for the group
+- section_order: order of the group in the sidebar
+- nav_order: order of the page inside the group
+
+The sidebar should sort by section_order first and nav_order second. Do not rely on alphabetical folder or title sorting for the learning path.
+
+Expected sidebar order:
+
+START
+  What Is an Agent?
+  Agent vs Workflow
+  Agent Decision Checklist
+
+DESIGN
+  Agent Types
+  Core Capabilities
+  Agent Memory
+  Retrieval and Grounding
+  Protocols and Tool Access
+  Design Strategies
+
+OPERATE
+  Coding Agent
+  Evaluation
+  Failure Modes
+
+REFERENCE
+  LLM Wiki and OKF
+  Sources
+

@@ -1,21 +1,14 @@
 const THEME_STORAGE_KEY = "agent-rebel-theme";
+const SIDEBAR_STORAGE_KEY = "agent-rebel-sidebar-state";
 
 applyStoredTheme();
 
-document.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-sidebar-open]");
-  if (!button) return;
-
-  const mode = button.getAttribute("data-sidebar-open");
-  const groups = document.querySelectorAll(".nav-group");
-  for (const group of groups) {
-    group.open = mode === "all";
-  }
-});
-
 document.addEventListener("DOMContentLoaded", () => {
   setupThemeToggle();
+  setupSidebarToggle();
   setupMobileMenu();
+  setupSidebarStatePersistence();
+  applyStoredSidebarState();
   renderIcons();
 
   const graphEl = document.querySelector("#wiki-graph");
@@ -27,6 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(() => {
       graphEl.innerHTML = '<p class="graph-error">Graph data could not be loaded.</p>';
     });
+});
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    applyStoredSidebarState();
+  }
 });
 
 function renderWikiGraph(container, graph) {
@@ -119,6 +118,118 @@ function applyStoredTheme() {
   applyTheme(theme);
 }
 
+function applyStoredSidebarState() {
+  const storedState = readSidebarState();
+  const groups = document.querySelectorAll(".nav-group");
+
+  if (!storedState) {
+    for (const group of groups) {
+      group.open = true;
+    }
+    syncSidebarToggle();
+    return;
+  }
+
+  const openGroups = new Set(storedState.openGroups || []);
+  for (const group of groups) {
+    const key = group.querySelector("summary")?.textContent?.trim() || "";
+    group.open = openGroups.has(key);
+  }
+
+  syncSidebarToggle();
+}
+
+function setupSidebarStatePersistence() {
+  const sidebar = document.querySelector(".wiki-nav");
+  if (!sidebar) return;
+
+  sidebar.addEventListener("click", (event) => {
+    const link = event.target.closest("a");
+    if (!link) return;
+    const group = link.closest(".nav-group");
+    if (!group) return;
+    group.open = false;
+    persistSidebarState();
+  });
+
+  document.querySelectorAll(".nav-group").forEach((group) => {
+    group.addEventListener("toggle", persistSidebarState);
+  });
+}
+
+function setupSidebarToggle() {
+  const button = document.querySelector("[data-sidebar-toggle]");
+  if (!button) return;
+
+  button.addEventListener("click", () => {
+    setAllSidebarGroupsOpen(!areAllSidebarGroupsOpen());
+  });
+
+  syncSidebarToggle();
+}
+
+function setAllSidebarGroupsOpen(openAll) {
+  const groups = document.querySelectorAll(".nav-group");
+  for (const group of groups) {
+    group.open = openAll;
+  }
+  persistSidebarState();
+}
+
+function areAllSidebarGroupsOpen() {
+  const groups = document.querySelectorAll(".nav-group");
+  if (!groups.length) return false;
+  return Array.from(groups).every((group) => group.open);
+}
+
+function readSidebarState() {
+  try {
+    const storedState = sessionStorage.getItem(SIDEBAR_STORAGE_KEY);
+    if (!storedState) return null;
+    return JSON.parse(storedState);
+  } catch {
+    return null;
+  }
+}
+
+function persistSidebarState() {
+  const openGroups = [];
+  document.querySelectorAll(".nav-group").forEach((group) => {
+    const summary = group.querySelector("summary")?.textContent?.trim();
+    if (group.open && summary) openGroups.push(summary);
+  });
+  try {
+    sessionStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify({ openGroups }));
+  } catch {
+    // Sidebar state still applies for the current page view when storage is unavailable.
+  }
+
+  syncSidebarToggle();
+}
+
+function syncSidebarToggle() {
+  const button = document.querySelector("[data-sidebar-toggle]");
+  if (!button) return;
+
+  const groups = document.querySelectorAll(".nav-group");
+  if (!groups.length) {
+    button.hidden = true;
+    return;
+  }
+
+  button.hidden = false;
+  const openAll = areAllSidebarGroupsOpen();
+  const shouldOpenAll = !openAll;
+  const label = shouldOpenAll ? "Open all" : "Close all";
+  const icon = button.querySelector("[data-sidebar-icon]");
+
+  button.setAttribute("aria-pressed", String(openAll));
+  button.setAttribute("aria-label", label);
+  button.setAttribute("title", label);
+  if (icon) icon.setAttribute("data-lucide", shouldOpenAll ? "chevrons-down-up" : "chevrons-up-down");
+  renderIcons();
+}
+
 function setupThemeToggle() {
   const button = document.querySelector("[data-theme-toggle]");
   if (!button) return;
@@ -147,11 +258,10 @@ function applyTheme(theme) {
 
 function updateThemeToggle(button) {
   const isDark = document.documentElement.dataset.theme === "dark";
-  const label = button.querySelector("[data-theme-label]");
   const icon = button.querySelector("[data-theme-icon]");
   button.setAttribute("aria-pressed", String(isDark));
   button.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
-  if (label) label.textContent = isDark ? "Dark" : "Light";
+  button.setAttribute("title", isDark ? "Switch to light theme" : "Switch to dark theme");
   if (icon) icon.setAttribute("data-lucide", isDark ? "moon" : "sun");
 }
 

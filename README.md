@@ -2,6 +2,8 @@
 
 Agent Rebel is a small OKF wiki for AI-agent strategy knowledge. It is a field manual, not a chat app.
 
+The content explains how agents differ from assistants and workflows, what agent categories exist, how protocols connect agents to tools and other agents, which capabilities and memory patterns matter, how RAG and OKF fit together, how to evaluate agents, and which failure modes to avoid.
+
 The app stores structured knowledge pages, source notes, links, backlinks, revisions, lint results, and graph data in SQLite. It renders pages with FastAPI/Jinja and uses Cytoscape.js for the visual graph.
 
 ## Current Scope
@@ -80,6 +82,18 @@ Writable local mode:
 AGENT_REBEL_EDITABLE=true uv run python -m fastapi dev
 ```
 
+Docs-enabled local mode:
+
+```bash
+AGENT_REBEL_SHOW_DOCS=true uv run python -m fastapi dev
+```
+
+Writable mode with docs:
+
+```bash
+AGENT_REBEL_EDITABLE=true AGENT_REBEL_SHOW_DOCS=true uv run python -m fastapi dev
+```
+
 Visit http://localhost:8000.
 
 On first startup, the app creates `data/agent_rebel.db` and seeds practical Agent Rebel sample pages.
@@ -100,6 +114,8 @@ On first startup, the app creates `data/agent_rebel.db` and seeds practical Agen
 ## Security Notes
 
 Editing is disabled by default. Set `AGENT_REBEL_EDITABLE=true` only for local development or trusted private deployments.
+
+FastAPI docs are disabled by default. Set `AGENT_REBEL_SHOW_DOCS=true` before startup only for local development or trusted private deployments; it exposes `/docs`, `/redoc`, and `/openapi.json`.
 
 This MVP does not include login, authorization, CSRF protection, or per-user permissions. Do not expose writable mode on a public internet domain.
 
