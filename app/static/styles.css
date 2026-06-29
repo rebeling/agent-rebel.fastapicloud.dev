@@ -1,9 +1,51 @@
 :root {
+  color-scheme: dark;
+  --bg: #101114;
+  --bg-soft: #15171b;
+  --panel: #191b20;
+  --panel-muted: #22252b;
+  --surface: rgba(25, 27, 32, 0.94);
+  --sidebar-bg: rgba(19, 21, 25, 0.9);
+  --toolbar-bg: rgba(25, 27, 32, 0.78);
+  --text: #f4f6f8;
+  --text-soft: #c8d0da;
+  --muted: #8d98a7;
+  --faint: #6f7a88;
+  --line: #303640;
+  --line-strong: #444c58;
+  --accent: #4fa3ff;
+  --accent-dark: #8ec5ff;
+  --accent-soft: rgba(79, 163, 255, 0.14);
+  --warn: #f6b34a;
+  --warn-soft: rgba(246, 179, 74, 0.12);
+  --error: #ff7474;
+  --error-soft: rgba(255, 116, 116, 0.12);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+  --focus: rgba(79, 163, 255, 0.22);
+  --tag-line: rgba(79, 163, 255, 0.34);
+  --notice-line: rgba(246, 179, 74, 0.38);
+  --button-shadow: 0 8px 24px rgba(79, 163, 255, 0.2);
+  --body-wash-start: rgba(36, 38, 43, 0.72);
+  --body-wash-end: rgba(16, 17, 20, 0.9);
+  --pre-bg: #0a0d11;
+  --pre-text: #e4e9ef;
+  --code-editor-bg: #121419;
+  --graph-bg: #121419;
+  --graph-grid: rgba(141, 152, 167, 0.14);
+  --radius: 8px;
+  --font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+html[data-theme="light"] {
   color-scheme: light;
   --bg: #f4f5f7;
   --bg-soft: #eef1f4;
   --panel: #ffffff;
   --panel-muted: #f8fafc;
+  --surface: rgba(255, 255, 255, 0.94);
+  --sidebar-bg: rgba(255, 255, 255, 0.82);
+  --toolbar-bg: rgba(255, 255, 255, 0.76);
   --text: #111827;
   --text-soft: #334155;
   --muted: #64748b;
@@ -18,9 +60,17 @@
   --error: #b91c1c;
   --error-soft: #fef2f2;
   --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
-  --radius: 8px;
-  --font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --focus: rgba(37, 99, 235, 0.14);
+  --tag-line: #bfdbfe;
+  --notice-line: #fde68a;
+  --button-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
+  --body-wash-start: rgba(255, 255, 255, 0.8);
+  --body-wash-end: rgba(244, 245, 247, 0.85);
+  --pre-bg: #0f172a;
+  --pre-text: #e2e8f0;
+  --code-editor-bg: #fbfdff;
+  --graph-bg: #f8fafc;
+  --graph-grid: rgba(148, 163, 184, 0.12);
 }
 
 * {
@@ -37,7 +87,7 @@ body {
   display: grid;
   grid-template-columns: 312px minmax(0, 1fr);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(244, 245, 247, 0.85)),
+    linear-gradient(180deg, var(--body-wash-start), var(--body-wash-end)),
     var(--bg);
   color: var(--text);
   font-family: var(--font-ui);
@@ -55,24 +105,39 @@ a:hover {
   color: var(--accent-dark);
 }
 
+.icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.1;
+}
+
 .sidebar {
   position: sticky;
   top: 0;
   height: 100vh;
   padding: 22px 18px 24px;
   border-right: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(18px);
   overflow-y: auto;
 }
 
-.brand {
-  display: block;
-  color: var(--text);
-  text-decoration: none;
+.sidebar-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
   margin-bottom: 18px;
   padding: 10px 10px 14px;
   border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  color: var(--text);
+  text-decoration: none;
 }
 
 .brand-title {
@@ -90,6 +155,57 @@ a:hover {
   font-size: 12px;
   line-height: 1.35;
   margin-top: 8px;
+}
+
+.shell-controls {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.theme-toggle,
+.menu-toggle {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text-soft);
+  cursor: pointer;
+  font: inherit;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.theme-toggle:hover,
+.menu-toggle:hover {
+  border-color: var(--tag-line);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.menu-toggle {
+  display: none;
+  width: 38px;
+  height: 34px;
+  place-items: center;
+  padding: 7px 9px;
+}
+
+.menu-toggle .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-menu {
+  display: block;
 }
 
 .search {
@@ -116,7 +232,7 @@ a:hover {
 .editor textarea:focus,
 .editor select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  box-shadow: 0 0 0 3px var(--focus);
 }
 
 .utility-nav {
@@ -142,6 +258,9 @@ a:hover {
 }
 
 .utility-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: 1px solid var(--line);
   background: var(--panel-muted);
   padding: 8px 10px;
@@ -151,6 +270,9 @@ a:hover {
 }
 
 .sidebar-text-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 0;
   background: transparent;
   color: var(--muted);
@@ -269,7 +391,7 @@ h1 {
 }
 
 .tags span {
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--tag-line);
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent-dark);
@@ -289,6 +411,7 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 40px;
   border: 1px solid transparent;
   border-radius: var(--radius);
@@ -300,7 +423,7 @@ h1 {
   font-weight: 720;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
+  box-shadow: var(--button-shadow);
 }
 
 .button:hover {
@@ -342,7 +465,7 @@ h1 {
 table,
 .editor,
 .graph-wrap {
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -404,8 +527,8 @@ table,
 .markdown pre,
 .diff {
   overflow-x: auto;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--pre-bg);
+  color: var(--pre-text);
   border-radius: var(--radius);
   padding: 18px;
 }
@@ -415,7 +538,7 @@ table,
   padding: 16px 18px;
   margin-bottom: 18px;
   background: var(--warn-soft);
-  border-color: #fde68a;
+  border-color: var(--notice-line);
   box-shadow: none;
 }
 
@@ -488,8 +611,8 @@ table,
 
 .okf-editor {
   min-height: 640px;
-  background: #fbfdff;
-  color: #0f172a;
+  background: var(--code-editor-bg);
+  color: var(--text);
   font-size: 14px;
 }
 
@@ -512,10 +635,13 @@ table,
   gap: 8px;
   padding: 12px;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--toolbar-bg);
 }
 
 .graph-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
@@ -528,7 +654,7 @@ table,
 }
 
 .graph-toolbar button:hover {
-  border-color: #bfdbfe;
+  border-color: var(--tag-line);
   background: var(--accent-soft);
   color: var(--accent-dark);
 }
@@ -537,9 +663,9 @@ table,
   width: 100%;
   min-height: 640px;
   background:
-    linear-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-    #f8fafc;
+    linear-gradient(var(--graph-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--graph-grid) 1px, transparent 1px),
+    var(--graph-bg);
   background-size: 42px 42px;
 }
 
@@ -611,16 +737,54 @@ td {
   }
 
   .sidebar {
-    position: relative;
+    position: sticky;
+    z-index: 20;
     height: auto;
+    max-height: 100svh;
+    padding: 12px 14px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
 
-  .wiki-nav {
+  .sidebar-header {
+    align-items: center;
+    margin-bottom: 0;
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .brand-title {
+    font-size: 20px;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .theme-toggle-label {
+    display: none;
+  }
+
+  .menu-toggle {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 12px;
+  }
+
+  .sidebar-menu {
+    display: none;
+    margin-top: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .sidebar.is-menu-open .sidebar-menu {
+    display: block;
+  }
+
+  .wiki-nav {
+    display: block;
+    max-height: calc(100svh - 236px);
+    overflow-y: auto;
+    padding-right: 4px;
   }
 
   .nav-group {
@@ -628,7 +792,7 @@ td {
   }
 
   .content {
-    padding: 28px 16px 48px;
+    padding: 26px 16px 48px;
   }
 
   .page-header,
@@ -644,6 +808,34 @@ td {
 
   .markdown {
     padding: 24px 20px;
+  }
+
+  .markdown pre,
+  .diff {
+    max-width: 100%;
+  }
+
+  .editor {
+    padding: 18px;
+  }
+
+  .body-editor,
+  .okf-editor {
+    min-height: 360px;
+  }
+
+  .source-okf-editor {
+    min-height: 260px;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .cytoscape-graph {
+    min-height: 460px;
   }
 
   .relation-panel + .relation-panel {

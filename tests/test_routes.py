@@ -21,11 +21,11 @@ class RouteTest(unittest.TestCase):
         os.environ.pop("AGENT_REBEL_DB_PATH", None)
         os.environ.pop("AGENT_REBEL_EDITABLE", None)
 
-    def test_homepage_renders_agent_rebel(self):
+    def test_homepage_renders_agent_knowledge_base(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Agent Rebel", response.text)
-        self.assertIn("Strategy, knowledge, and failure modes for AI agents", response.text)
+        self.assertIn("The Agent Knowledge Base", response.text)
+        self.assertIn("A structured reference for understanding, designing, and evaluating AI agents.", response.text)
 
     def test_page_route_renders_markdown_and_relations(self):
         response = self.client.get("/wiki/strategies/retrieval-first")

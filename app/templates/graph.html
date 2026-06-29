@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Graph - Agent Rebel{% endblock %}
+{% block title %}Graph - The Agent Knowledge Base{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -8,18 +8,18 @@
       <p class="description">Pages are nodes. Wikilinks are edges. Broken links stay visible as warnings.</p>
     </div>
     <div class="actions">
-      <a class="button secondary" href="/graph.json">JSON</a>
+      <a class="button secondary" href="/graph.json"><i class="icon" data-lucide="braces" aria-hidden="true"></i><span>JSON</span></a>
     </div>
   </header>
 
   <section class="graph-wrap">
     <div class="graph-toolbar" aria-label="Graph controls">
-      <button type="button" data-graph-layout="cose">CoSE</button>
-      <button type="button" data-graph-layout="breadthfirst">Hierarchy</button>
-      <button type="button" data-graph-layout="concentric">Rings</button>
-      <button type="button" data-graph-fit>Fit</button>
+      <button type="button" data-graph-layout="cose"><i class="icon" data-lucide="orbit" aria-hidden="true"></i><span>CoSE</span></button>
+      <button type="button" data-graph-layout="breadthfirst"><i class="icon" data-lucide="git-branch" aria-hidden="true"></i><span>Hierarchy</span></button>
+      <button type="button" data-graph-layout="concentric"><i class="icon" data-lucide="circle-dot" aria-hidden="true"></i><span>Rings</span></button>
+      <button type="button" data-graph-fit><i class="icon" data-lucide="maximize" aria-hidden="true"></i><span>Fit</span></button>
     </div>
-    <div id="wiki-graph" class="cytoscape-graph" data-graph-url="/graph.json" aria-label="Agent Rebel wiki graph"></div>
+    <div id="wiki-graph" class="cytoscape-graph" data-graph-url="/graph.json" aria-label="The Agent Knowledge Base wiki graph"></div>
   </section>
 
   <section class="relations">

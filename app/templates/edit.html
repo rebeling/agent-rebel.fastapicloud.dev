@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Edit {{ page.slug }} - Agent Rebel{% endblock %}
+{% block title %}Edit {{ page.slug }} - The Agent Knowledge Base{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -19,8 +19,8 @@
   <form class="editor" action="/edit/{{ page.slug }}" method="post">
     <label>OKF document <textarea class="okf-editor" name="document" required>{{ document }}</textarea></label>
     <div class="actions">
-      <button class="button" type="submit">Save</button>
-      <a class="button secondary" href="/wiki/{{ page.slug }}">Cancel</a>
+      <button class="button" type="submit"><i class="icon" data-lucide="save" aria-hidden="true"></i><span>Save</span></button>
+      <a class="button secondary" href="/wiki/{{ page.slug }}"><i class="icon" data-lucide="x" aria-hidden="true"></i><span>Cancel</span></a>
     </div>
   </form>
 {% endblock %}

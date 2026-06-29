@@ -1,39 +1,52 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Agent Rebel{% endblock %}</title>
+    <title>{% block title %}The Agent Knowledge Base{% endblock %}</title>
     <link rel="stylesheet" href="/static/styles.css">
   </head>
   <body>
     <aside class="sidebar">
-      <a class="brand" href="/">
-        <span class="brand-title">Agent Rebel</span>
-        <span class="brand-subtitle">Strategy, knowledge, and failure modes for AI agents</span>
-      </a>
-      <form class="search" action="/" method="get">
-        <input name="q" value="{{ q or '' }}" placeholder="Search wiki">
-      </form>
-      <nav class="utility-nav" aria-label="Wiki tools">
-        <a href="/lint">Lint</a>
-        <a href="/log">Log</a>
-        <a href="/sources">Sources</a>
-        <a href="/graph">Graph</a>
-      </nav>
-      <div class="sidebar-actions" aria-label="Sidebar controls">
-        <button class="sidebar-text-control" type="button" data-sidebar-open="all">Open all</button>
-        <button class="sidebar-text-control" type="button" data-sidebar-open="none">Close all</button>
+      <div class="sidebar-header">
+        <a class="brand" href="/">
+          <span class="brand-title">The Agent Knowledge Base</span>
+          <span class="brand-subtitle">A structured reference for understanding, designing, and evaluating AI agents.</span>
+        </a>
+        <div class="shell-controls">
+          <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="true" aria-label="Switch to light theme">
+            <i class="icon" data-theme-icon data-lucide="moon" aria-hidden="true"></i>
+            <span class="theme-toggle-label" data-theme-label>Dark</span>
+          </button>
+          <button class="menu-toggle" type="button" data-menu-toggle aria-controls="sidebar-menu" aria-expanded="false" aria-label="Open navigation">
+            <i class="icon" data-menu-icon data-lucide="menu" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
-      <div class="wiki-nav">
-        {% for group, pages in groups.items() %}
-          <details class="nav-group" open>
-            <summary>{{ group }}</summary>
-            {% for item in pages %}
-              <a href="/wiki/{{ item.slug }}">{{ item.title }}</a>
-            {% endfor %}
-          </details>
-        {% endfor %}
+      <div id="sidebar-menu" class="sidebar-menu" data-menu>
+        <form class="search" action="/" method="get">
+          <input name="q" value="{{ q or '' }}" placeholder="Search wiki">
+        </form>
+        <nav class="utility-nav" aria-label="Wiki tools">
+          <a href="/lint"><i class="icon" data-lucide="list-checks" aria-hidden="true"></i><span>Lint</span></a>
+          <a href="/log"><i class="icon" data-lucide="scroll-text" aria-hidden="true"></i><span>Log</span></a>
+          <a href="/sources"><i class="icon" data-lucide="archive" aria-hidden="true"></i><span>Sources</span></a>
+          <a href="/graph"><i class="icon" data-lucide="network" aria-hidden="true"></i><span>Graph</span></a>
+        </nav>
+        <div class="sidebar-actions" aria-label="Sidebar controls">
+          <button class="sidebar-text-control" type="button" data-sidebar-open="all"><i class="icon" data-lucide="chevrons-down-up" aria-hidden="true"></i><span>Open all</span></button>
+          <button class="sidebar-text-control" type="button" data-sidebar-open="none"><i class="icon" data-lucide="chevrons-up-down" aria-hidden="true"></i><span>Close all</span></button>
+        </div>
+        <div class="wiki-nav">
+          {% for group, pages in groups.items() %}
+            <details class="nav-group" open>
+              <summary>{{ group }}</summary>
+              {% for item in pages %}
+                <a href="/wiki/{{ item.slug }}">{{ item.title }}</a>
+              {% endfor %}
+            </details>
+          {% endfor %}
+        </div>
       </div>
     </aside>
     <main class="content">
@@ -42,6 +55,7 @@
       </div>
     </main>
     {% block page_scripts %}{% endblock %}
+    <script src="/static/vendor/lucide/lucide.min.js" defer></script>
     <script src="/static/app.js" defer></script>
   </body>
 </html>

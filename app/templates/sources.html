@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Sources - Agent Rebel{% endblock %}
+{% block title %}Sources - The Agent Knowledge Base{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -21,7 +21,7 @@
       Source OKF
       <textarea class="okf-editor source-okf-editor" name="document" required {% if not edits_enabled %}disabled{% endif %}>{{ source_document }}</textarea>
     </label>
-    <button class="button" type="submit" {% if not edits_enabled %}disabled title="Source ingest is disabled"{% endif %}>Ingest Source</button>
+    <button class="button" type="submit" {% if not edits_enabled %}disabled title="Source ingest is disabled"{% endif %}><i class="icon" data-lucide="upload" aria-hidden="true"></i>Ingest Source</button>
   </form>
   <table>
     <thead><tr><th>Slug</th><th>Title</th><th>Type</th><th>Created</th></tr></thead>
