@@ -28,7 +28,7 @@ class WikiCoreTest(unittest.TestCase):
     def test_seed_creates_index_and_links(self):
         page = get_page(self.conn, "index")
         self.assertIsNotNone(page)
-        self.assertEqual(page["title"], "Agent Rebel")
+        self.assertEqual(page["title"], "The Agent Knowledge Base")
         links = outgoing_links(self.conn, page["id"])
         self.assertGreaterEqual(len(links), 8)
         self.assertFalse(any(link["is_broken"] for link in links))
@@ -36,6 +36,17 @@ class WikiCoreTest(unittest.TestCase):
     def test_seed_explains_okf_workflow(self):
         self.assertIsNotNone(get_page(self.conn, "concepts/okf-wiki"))
         self.assertIsNotNone(get_page(self.conn, "guides/ingest-query-lint"))
+        self.assertIsNotNone(get_page(self.conn, "protocols/agent-protocols"))
+        self.assertIsNotNone(get_page(self.conn, "capabilities/core-agent-capabilities"))
+        self.assertIsNotNone(get_page(self.conn, "memory/context-and-memory"))
+        self.assertIsNotNone(get_page(self.conn, "decisions/use-okf"))
+        self.assertIsNotNone(get_page(self.conn, "evaluation/agent-evaluation"))
+        self.assertIsNotNone(get_page(self.conn, "failures/agent-failure-modes"))
+        self.assertIsNotNone(get_page(self.conn, "tools/qdrant"))
+        self.assertIsNotNone(get_page(self.conn, "tools/cognee"))
+        self.assertIsNotNone(get_page(self.conn, "concepts/illusion-of-agents"))
+        self.assertIsNotNone(get_page(self.conn, "patterns/streaming-and-thinking"))
+        self.assertIsNotNone(get_page(self.conn, "meta/self-describing-wiki"))
 
     def test_wikilink_extraction_and_slug_safety(self):
         links = extract_wikilinks("[[strategies/retrieval-first|Retrieval first]]")
