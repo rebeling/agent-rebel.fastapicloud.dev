@@ -1,5 +1,5 @@
 const THEME_STORAGE_KEY = "agent-rebel-theme";
-const SIDEBAR_STORAGE_KEY = "agent-rebel-sidebar-state";
+const SIDEBAR_STORAGE_KEY = "agent-rebel-sidebar-state-v2";
 
 applyStoredTheme();
 
@@ -122,35 +122,24 @@ function applyStoredSidebarState() {
   const storedState = readSidebarState();
   const groups = document.querySelectorAll(".nav-group");
 
+  for (const group of groups) {
+    group.open = true;
+  }
+
   if (!storedState) {
-    for (const group of groups) {
-      group.open = true;
-    }
-    syncSidebarToggle();
+    openCurrentSidebarGroup();
+    persistSidebarState();
     return;
   }
 
-  const openGroups = new Set(storedState.openGroups || []);
-  for (const group of groups) {
-    const key = group.querySelector("summary")?.textContent?.trim() || "";
-    group.open = openGroups.has(key);
-  }
-
+  openCurrentSidebarGroup();
+  persistSidebarState();
   syncSidebarToggle();
 }
 
 function setupSidebarStatePersistence() {
   const sidebar = document.querySelector(".wiki-nav");
   if (!sidebar) return;
-
-  sidebar.addEventListener("click", (event) => {
-    const link = event.target.closest("a");
-    if (!link) return;
-    const group = link.closest(".nav-group");
-    if (!group) return;
-    group.open = false;
-    persistSidebarState();
-  });
 
   document.querySelectorAll(".nav-group").forEach((group) => {
     group.addEventListener("toggle", persistSidebarState);
@@ -186,7 +175,9 @@ function readSidebarState() {
   try {
     const storedState = sessionStorage.getItem(SIDEBAR_STORAGE_KEY);
     if (!storedState) return null;
-    return JSON.parse(storedState);
+    const parsedState = JSON.parse(storedState);
+    if (!Array.isArray(parsedState.openGroups)) return null;
+    return parsedState;
   } catch {
     return null;
   }
@@ -205,6 +196,16 @@ function persistSidebarState() {
   }
 
   syncSidebarToggle();
+}
+
+function openCurrentSidebarGroup() {
+  const currentPath = window.location.pathname;
+  document.querySelectorAll(".nav-group a").forEach((link) => {
+    if (new URL(link.href, window.location.origin).pathname === currentPath) {
+      const group = link.closest(".nav-group");
+      if (group) group.open = true;
+    }
+  });
 }
 
 function syncSidebarToggle() {
