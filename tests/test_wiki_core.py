@@ -164,6 +164,33 @@ Raw material.
         incoming_slugs = {link["from_slug"] for link in incoming}
         self.assertIn("index", incoming_slugs)
 
+    def test_relation_lists_dedupe_repeated_links_with_counts(self):
+        save_page(
+            self.conn,
+            slug="tests/repeated-links",
+            title="Repeated Links",
+            page_type="concept",
+            description="A page with repeated links.",
+            tags=["test"],
+            body_markdown="Links to [[index]], [[index|home]], and [[missing/page]] twice: [[missing/page]].",
+            change_summary="Create repeated links test.",
+        )
+        page = get_page(self.conn, "tests/repeated-links")
+        links = outgoing_links(self.conn, page["id"])
+        by_slug = {link["target_slug"]: link for link in links}
+
+        self.assertEqual([link["target_slug"] for link in links].count("index"), 1)
+        self.assertEqual(by_slug["index"]["link_count"], 2)
+        self.assertEqual([link["target_slug"] for link in links].count("missing/page"), 1)
+        self.assertEqual(by_slug["missing/page"]["link_count"], 2)
+        self.assertTrue(by_slug["missing/page"]["is_broken"])
+
+        index = get_page(self.conn, "index")
+        incoming = backlinks(self.conn, index["id"])
+        repeated = [link for link in incoming if link["from_slug"] == "tests/repeated-links"]
+        self.assertEqual(len(repeated), 1)
+        self.assertEqual(repeated[0]["link_count"], 2)
+
     def test_broken_links_are_warnings(self):
         save_page(
             self.conn,

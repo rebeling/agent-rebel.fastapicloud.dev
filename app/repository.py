@@ -310,11 +310,20 @@ def rebuild_all_links(conn: sqlite3.Connection) -> None:
 def outgoing_links(conn: sqlite3.Connection, page_id: int) -> list[dict[str, Any]]:
     rows = conn.execute(
         """
-        SELECT links.*, pages.title AS target_title
+        SELECT
+            MIN(links.id) AS id,
+            links.from_page_id,
+            links.target_slug,
+            MIN(links.target_page_id) AS target_page_id,
+            MIN(links.link_text) AS link_text,
+            MAX(links.is_broken) AS is_broken,
+            pages.title AS target_title,
+            COUNT(*) AS link_count
         FROM links
         LEFT JOIN pages ON pages.id = links.target_page_id
-        WHERE from_page_id = ?
-        ORDER BY target_slug
+        WHERE links.from_page_id = ?
+        GROUP BY links.from_page_id, links.target_slug, pages.title
+        ORDER BY links.target_slug
         """,
         (page_id,),
     ).fetchall()
@@ -324,10 +333,20 @@ def outgoing_links(conn: sqlite3.Connection, page_id: int) -> list[dict[str, Any
 def backlinks(conn: sqlite3.Connection, page_id: int) -> list[dict[str, Any]]:
     rows = conn.execute(
         """
-        SELECT links.*, pages.slug AS from_slug, pages.title AS from_title
+        SELECT
+            MIN(links.id) AS id,
+            links.from_page_id,
+            links.target_slug,
+            links.target_page_id,
+            MIN(links.link_text) AS link_text,
+            MAX(links.is_broken) AS is_broken,
+            pages.slug AS from_slug,
+            pages.title AS from_title,
+            COUNT(*) AS link_count
         FROM links
         JOIN pages ON pages.id = links.from_page_id
-        WHERE target_page_id = ?
+        WHERE links.target_page_id = ?
+        GROUP BY links.target_page_id, pages.id, pages.slug, pages.title
         ORDER BY pages.slug
         """,
         (page_id,),

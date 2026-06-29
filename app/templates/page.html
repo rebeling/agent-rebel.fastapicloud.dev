@@ -44,6 +44,9 @@
             {% else %}
               <a href="/wiki/{{ link.target_slug }}">{{ link.target_title }}</a>
             {% endif %}
+            {% if link.link_count > 1 %}
+              <span class="relation-count">{{ link.link_count }}</span>
+            {% endif %}
           </p>
         {% endfor %}
       {% else %}
@@ -54,7 +57,12 @@
       <h2>Backlinks</h2>
       {% if backlinks %}
         {% for link in backlinks %}
-          <p><a href="/wiki/{{ link.from_slug }}">{{ link.from_title }}</a></p>
+          <p>
+            <a href="/wiki/{{ link.from_slug }}">{{ link.from_title }}</a>
+            {% if link.link_count > 1 %}
+              <span class="relation-count">{{ link.link_count }}</span>
+            {% endif %}
+          </p>
         {% endfor %}
       {% else %}
         <p class="muted">No backlinks yet.</p>
