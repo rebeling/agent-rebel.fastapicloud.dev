@@ -40,7 +40,14 @@ def grouped_pages(conn: sqlite3.Connection) -> dict[str, list[dict[str, Any]]]:
         ),
     )
     return {
-        group: sorted(pages, key=lambda page: (sidebar_order_value(page.get("nav_order")), page["title"].casefold(), page["slug"]))
+        group: sorted(
+            pages,
+            key=lambda page: (
+                sidebar_order_value(page.get("nav_order")),
+                page["title"].casefold(),
+                page["slug"],
+            ),
+        )
         for group, pages in sorted_groups
     }
 
@@ -66,6 +73,7 @@ def get_page(conn: sqlite3.Connection, slug: str) -> dict[str, Any] | None:
     normalized = normalize_slug(slug)
     from app.config import wiki_directory
     from app.okf import parse_okf
+
     file_path = wiki_directory() / f"{normalized}.md"
     if not file_path.exists():
         return None
@@ -75,7 +83,9 @@ def get_page(conn: sqlite3.Connection, slug: str) -> dict[str, Any] | None:
         okf = parse_okf(content)
     except Exception as e:
         print(f"Error reading {file_path} from disk: {e}")
-        row = conn.execute("SELECT * FROM pages WHERE slug = ?", (normalized,)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM pages WHERE slug = ?", (normalized,)
+        ).fetchone()
         return row_to_page(row) if row else None
 
     row = conn.execute("SELECT * FROM pages WHERE slug = ?", (normalized,)).fetchone()
@@ -160,6 +170,7 @@ def save_page(
     if write_to_disk:
         from app.config import wiki_directory
         from app.okf import page_to_okf
+
         tags_list = json.loads(tags_json)
         page_dict = {
             "title": title,
@@ -176,9 +187,11 @@ def save_page(
         file_path = wiki_directory() / f"{normalized}.md"
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(okf_str, encoding="utf-8")
-    existing = conn.execute("SELECT * FROM pages WHERE slug = ?", (normalized,)).fetchone()
+    existing = conn.execute(
+        "SELECT * FROM pages WHERE slug = ?", (normalized,)
+    ).fetchone()
     if existing:
-        page_id = existing["id"]
+        page_id = int(existing["id"])
         conn.execute(
             """
             UPDATE pages
@@ -223,6 +236,8 @@ def save_page(
                 tags_json,
             ),
         )
+        if cursor.lastrowid is None:
+            raise RuntimeError("SQLite did not return an id for the inserted page.")
         page_id = cursor.lastrowid
         operation = "create"
 
@@ -285,7 +300,9 @@ def next_revision_number(conn: sqlite3.Connection, page_id: int) -> int:
 def rebuild_links(conn: sqlite3.Connection, page_id: int, body_markdown: str) -> None:
     conn.execute("DELETE FROM links WHERE from_page_id = ?", (page_id,))
     for link in extract_wikilinks(body_markdown):
-        target = conn.execute("SELECT id FROM pages WHERE slug = ?", (link["target_slug"],)).fetchone()
+        target = conn.execute(
+            "SELECT id FROM pages WHERE slug = ?", (link["target_slug"],)
+        ).fetchone()
         conn.execute(
             """
             INSERT INTO links (from_page_id, target_slug, target_page_id, link_text, is_broken)
@@ -366,8 +383,12 @@ def revisions(conn: sqlite3.Connection, page_id: int) -> list[dict[str, Any]]:
     return [dict(row) for row in rows]
 
 
-def revision_diff(conn: sqlite3.Connection, page_id: int, revision_number: int) -> str | None:
-    current = conn.execute("SELECT body_markdown FROM pages WHERE id = ?", (page_id,)).fetchone()
+def revision_diff(
+    conn: sqlite3.Connection, page_id: int, revision_number: int
+) -> str | None:
+    current = conn.execute(
+        "SELECT body_markdown FROM pages WHERE id = ?", (page_id,)
+    ).fetchone()
     revision = conn.execute(
         """
         SELECT body_markdown FROM page_revisions
@@ -407,7 +428,13 @@ def create_source(
             content = excluded.content,
             metadata_json = excluded.metadata_json
         """,
-        (normalized, title.strip(), source_type.strip(), content, json.dumps(metadata or {})),
+        (
+            normalized,
+            title.strip(),
+            source_type.strip(),
+            content,
+            json.dumps(metadata or {}),
+        ),
     )
     log_operation(
         conn,
@@ -453,7 +480,14 @@ def log_operation(
         INSERT INTO operation_log (operation, target_type, target_slug, actor, summary, metadata_json)
         VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (operation, target_type, target_slug, actor, summary, json.dumps(metadata or {})),
+        (
+            operation,
+            target_type,
+            target_slug,
+            actor,
+            summary,
+            json.dumps(metadata or {}),
+        ),
     )
 
 

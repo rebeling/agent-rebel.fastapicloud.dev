@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Edit {{ page.slug }} - The Agent Wiki{% endblock %}
+{% block title %}Edit {{ page.slug }} - {{ wiki_title }}{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -16,11 +16,11 @@
       {% endfor %}
     </section>
   {% endif %}
-  <form class="editor" action="/edit/{{ page.slug }}" method="post">
+  <form class="editor" action="{{ base_url }}/edit/{{ page.slug }}" method="post">
     <label>OKF document <textarea class="okf-editor" name="document" required>{{ document }}</textarea></label>
     <div class="actions">
       <button class="button" type="submit"><i class="icon" data-lucide="save" aria-hidden="true"></i><span>Save</span></button>
-      <a class="button secondary" href="/wiki/{{ page.slug }}"><i class="icon" data-lucide="x" aria-hidden="true"></i><span>Cancel</span></a>
+      <a class="button secondary" href="{{ base_url }}/wiki/{{ page.slug }}"><i class="icon" data-lucide="x" aria-hidden="true"></i><span>Cancel</span></a>
     </div>
   </form>
 {% endblock %}

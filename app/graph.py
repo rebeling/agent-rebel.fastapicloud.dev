@@ -2,7 +2,9 @@ import sqlite3
 
 
 def graph_json(conn: sqlite3.Connection) -> dict:
-    rows = conn.execute("SELECT slug, title, page_type FROM pages ORDER BY slug").fetchall()
+    rows = conn.execute(
+        "SELECT slug, title, page_type FROM pages ORDER BY slug"
+    ).fetchall()
     nodes = [
         {
             "id": row["slug"],

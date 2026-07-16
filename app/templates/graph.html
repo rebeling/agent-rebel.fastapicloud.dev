@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Graph - The Agent Wiki{% endblock %}
+{% block title %}Graph - {{ wiki_title }}{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -8,7 +8,7 @@
       <p class="description">Pages are nodes. Wikilinks are edges. Broken links stay visible as warnings.</p>
     </div>
     <div class="actions">
-      <a class="button secondary" href="/graph.json"><i class="icon" data-lucide="braces" aria-hidden="true"></i><span>JSON</span></a>
+      <a class="button secondary" href="{{ base_url }}/graph.json"><i class="icon" data-lucide="braces" aria-hidden="true"></i><span>JSON</span></a>
     </div>
   </header>
 
@@ -19,26 +19,26 @@
       <button type="button" data-graph-layout="concentric"><i class="icon" data-lucide="circle-dot" aria-hidden="true"></i><span>Rings</span></button>
       <button type="button" data-graph-fit><i class="icon" data-lucide="maximize" aria-hidden="true"></i><span>Fit</span></button>
     </div>
-    <div id="wiki-graph" class="cytoscape-graph" data-graph-url="/graph.json" aria-label="The Agent Wiki graph"></div>
+    <div id="wiki-graph" class="cytoscape-graph" data-graph-url="{{ base_url }}/graph.json" data-wiki-base="{{ base_url }}" aria-label="{{ wiki_title }} graph"></div>
   </section>
 
   <section class="relations">
     <div class="relation-panel">
       <h2>Nodes</h2>
       {% for node in graph.nodes %}
-        <p><a href="/wiki/{{ node.id }}">{{ node.title }}</a> <span class="muted">{{ node.type }}</span></p>
+        <p><a href="{{ base_url }}/wiki/{{ node.id }}">{{ node.title }}</a> <span class="muted">{{ node.type }}</span></p>
       {% endfor %}
     </div>
     <div class="relation-panel">
       <h2>Edges</h2>
       {% for edge in graph.edges %}
         <p>
-          <a href="/wiki/{{ edge.source }}">{{ edge.source }}</a>
+          <a href="{{ base_url }}/wiki/{{ edge.source }}">{{ edge.source }}</a>
           →
           {% if edge.broken %}
             <span class="broken-link">{{ edge.target }}</span>
           {% else %}
-            <a href="/wiki/{{ edge.target }}">{{ edge.target }}</a>
+            <a href="{{ base_url }}/wiki/{{ edge.target }}">{{ edge.target }}</a>
           {% endif %}
         </p>
       {% endfor %}

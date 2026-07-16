@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if page.slug == "index" %}The Agent Wiki{% else %}{{ page.title }} - The Agent Wiki{% endif %}{% endblock %}
+{% block title %}{% if page.slug == "index" %}{{ wiki_title }}{% else %}{{ page.title }} - {{ wiki_title }}{% endif %}{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -14,11 +14,11 @@
     </div>
     <div class="actions">
       {% if edits_enabled %}
-        <a class="button" href="/edit/{{ page.slug }}"><i class="icon" data-lucide="pencil" aria-hidden="true"></i><span>Edit</span></a>
+        <a class="button" href="{{ base_url }}/edit/{{ page.slug }}"><i class="icon" data-lucide="pencil" aria-hidden="true"></i><span>Edit</span></a>
       {% else %}
         <button class="button" type="button" disabled title="Editing is disabled"><i class="icon" data-lucide="pencil-off" aria-hidden="true"></i>Edit</button>
       {% endif %}
-      <a class="button secondary" href="/history/{{ page.slug }}"><i class="icon" data-lucide="history" aria-hidden="true"></i><span>History</span></a>
+      <a class="button secondary" href="{{ base_url }}/history/{{ page.slug }}"><i class="icon" data-lucide="history" aria-hidden="true"></i><span>History</span></a>
     </div>
   </header>
 
@@ -42,7 +42,7 @@
             {% if link.is_broken %}
               <span class="broken-link">[[{{ link.target_slug }}]]</span>
             {% else %}
-              <a href="/wiki/{{ link.target_slug }}">{{ link.target_title }}</a>
+              <a href="{{ base_url }}/wiki/{{ link.target_slug }}">{{ link.target_title }}</a>
             {% endif %}
             {% if link.link_count > 1 %}
               <span class="relation-count">{{ link.link_count }}</span>
@@ -58,7 +58,7 @@
       {% if backlinks %}
         {% for link in backlinks %}
           <p>
-            <a href="/wiki/{{ link.from_slug }}">{{ link.from_title }}</a>
+            <a href="{{ base_url }}/wiki/{{ link.from_slug }}">{{ link.from_title }}</a>
             {% if link.link_count > 1 %}
               <span class="relation-count">{{ link.link_count }}</span>
             {% endif %}
@@ -69,4 +69,10 @@
       {% endif %}
     </div>
   </section>
+{% endblock %}
+
+{% block page_scripts %}
+  {% if 'class="mermaid"' in body_html %}
+    <script src="/static/vendor/mermaid/mermaid.min.js" defer></script>
+  {% endif %}
 {% endblock %}

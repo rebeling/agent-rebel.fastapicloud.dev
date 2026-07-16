@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   applyStoredSidebarState();
   renderIcons();
 
+  initMermaid();
+
   const graphEl = document.querySelector("#wiki-graph");
   if (!graphEl || typeof cytoscape === "undefined") return;
 
@@ -31,6 +33,7 @@ window.addEventListener("pageshow", (event) => {
 function renderWikiGraph(container, graph) {
   const nodes = new Map();
   const elements = [];
+  const wikiBase = container.dataset.wikiBase || "";
 
   for (const node of graph.nodes) {
     nodes.set(node.id, true);
@@ -39,7 +42,7 @@ function renderWikiGraph(container, graph) {
         id: node.id,
         label: node.title,
         type: node.type,
-        href: `/wiki/${node.id}`,
+        href: `${wikiBase}/wiki/${node.id}`,
         weight: node.id === "index" ? 4 : 1,
       },
       classes: `type-${node.type}`,
@@ -255,6 +258,38 @@ function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
   const button = document.querySelector("[data-theme-toggle]");
   if (button) updateThemeToggle(button);
+  rerenderMermaid();
+}
+
+function initMermaid() {
+  const blocks = document.querySelectorAll("pre.mermaid");
+  if (!blocks.length || typeof mermaid === "undefined") return;
+  blocks.forEach((block) => {
+    if (!block.dataset.mermaidSource) {
+      block.dataset.mermaidSource = block.textContent;
+    }
+  });
+  renderMermaidBlocks();
+}
+
+function renderMermaidBlocks() {
+  const isDark = document.documentElement.dataset.theme === "dark";
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: isDark ? "dark" : "default",
+    securityLevel: "strict",
+  });
+  mermaid.run({ querySelector: "pre.mermaid" }).catch(() => {});
+}
+
+function rerenderMermaid() {
+  const blocks = document.querySelectorAll("pre.mermaid[data-processed]");
+  if (!blocks.length || typeof mermaid === "undefined") return;
+  blocks.forEach((block) => {
+    block.removeAttribute("data-processed");
+    block.textContent = block.dataset.mermaidSource || "";
+  });
+  renderMermaidBlocks();
 }
 
 function updateThemeToggle(button) {

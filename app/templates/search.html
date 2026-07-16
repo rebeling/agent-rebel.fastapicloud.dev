@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Search - The Agent Wiki{% endblock %}
+{% block title %}Search - {{ wiki_title }}{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -10,7 +10,7 @@
   </header>
   {% for page in results %}
     <section class="search-result">
-      <h2><a href="/wiki/{{ page.slug }}">{{ page.title }}</a></h2>
+      <h2><a href="{{ base_url }}/wiki/{{ page.slug }}">{{ page.title }}</a></h2>
       <p>{{ page.description }}</p>
       <p class="muted">{{ page.slug }}</p>
     </section>

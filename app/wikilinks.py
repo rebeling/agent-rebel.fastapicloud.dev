@@ -8,13 +8,17 @@ SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9/_-]*[a-z0-9]$|^[a-z0-9]$")
 def normalize_slug(value: str) -> str:
     original = value.strip()
     if not original or ".." in original or original.startswith("/"):
-        raise ValueError("Slug must contain lowercase letters, numbers, dashes, underscores, or slashes.")
+        raise ValueError(
+            "Slug must contain lowercase letters, numbers, dashes, underscores, or slashes."
+        )
     slug = original.lower().replace(" ", "-")
     slug = re.sub(r"[^a-z0-9/_-]+", "-", slug)
     slug = re.sub(r"-{2,}", "-", slug).strip("/-")
     slug = re.sub(r"/{2,}", "/", slug)
     if not slug or ".." in slug or not SLUG_RE.match(slug):
-        raise ValueError("Slug must contain lowercase letters, numbers, dashes, underscores, or slashes.")
+        raise ValueError(
+            "Slug must contain lowercase letters, numbers, dashes, underscores, or slashes."
+        )
     return slug
 
 

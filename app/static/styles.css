@@ -874,3 +874,155 @@ td {
     margin-top: 16px;
   }
 }
+
+/* Wiki switcher (sidebar) */
+.wiki-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.wiki-switcher .wiki-switch {
+  display: block;
+  border: 1px solid var(--line);
+  background: var(--panel-muted);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.wiki-switcher .wiki-switch:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.wiki-switcher .wiki-switch.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+/* Landing page */
+body.landing-body {
+  display: block;
+}
+
+.landing {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 96px 24px 64px;
+}
+
+.landing-header {
+  position: relative;
+  margin-bottom: 36px;
+}
+
+.landing-header h1 {
+  margin: 0 0 6px;
+  font-size: 34px;
+}
+
+.landing-header .theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.landing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.landing-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.landing-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.landing-card-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.landing-card-subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.landing-card-cta {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+/* Markdown tables */
+.markdown .table-wrap {
+  overflow-x: auto;
+  margin: 18px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.markdown .table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.markdown .table-wrap th,
+.markdown .table-wrap td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.markdown .table-wrap th {
+  background: var(--panel-muted);
+  font-weight: 700;
+  text-align: left;
+}
+
+.markdown .table-wrap tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.markdown .table-wrap tbody tr:hover td {
+  background: var(--accent-soft);
+}
+
+/* Mermaid diagrams */
+.markdown pre.mermaid {
+  background: transparent;
+  border: none;
+  padding: 12px 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.markdown pre.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}

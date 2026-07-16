@@ -17,9 +17,23 @@ PAGE_TYPES = [
     "catalog",
     "log",
     "meta",
+    # llm-proxy wiki types
+    "architecture",
+    "governance",
+    "provider",
+    "comparison",
+    "failure",
+    "source",
 ]
 
-REQUIRED_PAGE_FIELDS = ["slug", "title", "page_type", "description", "tags", "body_markdown"]
+REQUIRED_PAGE_FIELDS = [
+    "slug",
+    "title",
+    "page_type",
+    "description",
+    "tags",
+    "body_markdown",
+]
 
 
 def seed_schema_rules(conn) -> None:

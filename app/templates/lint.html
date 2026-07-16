@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Lint - The Agent Wiki{% endblock %}
+{% block title %}Lint - {{ wiki_title }}{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -15,7 +15,7 @@
         {% for item in results %}
           <tr>
             <td class="{{ item.severity }}">{{ item.severity }}</td>
-            <td><a href="/wiki/{{ item.target_slug }}">{{ item.target_slug }}</a></td>
+            <td><a href="{{ base_url }}/wiki/{{ item.target_slug }}">{{ item.target_slug }}</a></td>
             <td>{{ item.code }}</td>
             <td>{{ item.message }}</td>
           </tr>

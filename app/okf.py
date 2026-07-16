@@ -79,15 +79,23 @@ def new_page_okf(slug: str) -> str:
 def parse_okf(document: str) -> OKFDocument:
     frontmatter, body = split_okf(document)
     metadata = parse_frontmatter(frontmatter)
+    if "description" not in metadata and "summary" in metadata:
+        metadata["description"] = metadata["summary"]
     required = ["title", "type", "description", "tags"]
-    missing = [field for field in required if field not in metadata or metadata[field] in ("", [])]
+    missing = [
+        field
+        for field in required
+        if field not in metadata or metadata[field] in ("", [])
+    ]
     if missing:
         raise OKFError(f"Missing required OKF field: {', '.join(missing)}.")
     page_type = str(metadata["type"]).strip()
     if page_type not in PAGE_TYPES:
         raise OKFError(f"Unknown OKF type '{page_type}'.")
     tags = metadata["tags"]
-    if not isinstance(tags, list) or not all(isinstance(tag, str) and tag.strip() for tag in tags):
+    if not isinstance(tags, list) or not all(
+        isinstance(tag, str) and tag.strip() for tag in tags
+    ):
         raise OKFError("OKF field 'tags' must be a list of strings.")
     return OKFDocument(
         title=str(metadata["title"]).strip(),
@@ -106,7 +114,11 @@ def parse_source_okf(document: str) -> OKFSource:
     frontmatter, body = split_okf(document)
     metadata = parse_frontmatter(frontmatter)
     required = ["title", "type"]
-    missing = [field for field in required if field not in metadata or metadata[field] in ("", [])]
+    missing = [
+        field
+        for field in required
+        if field not in metadata or metadata[field] in ("", [])
+    ]
     if missing:
         raise OKFError(f"Missing required source OKF field: {', '.join(missing)}.")
     if not body.strip():

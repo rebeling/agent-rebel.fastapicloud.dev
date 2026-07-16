@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wiki Hub</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body class="landing-body">
+    <main class="landing">
+      <header class="landing-header">
+        <h1>Wiki Hub</h1>
+        <p class="muted">Pick a knowledge base.</p>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="true" aria-label="Switch to light theme">
+          <i class="icon" data-theme-icon data-lucide="moon" aria-hidden="true"></i>
+        </button>
+      </header>
+      <div class="landing-cards">
+        {% for id, wiki in wikis.items() %}
+          <a class="landing-card" href="/{{ id }}/">
+            <span class="landing-card-title">{{ wiki.title }}</span>
+            <span class="landing-card-subtitle">{{ wiki.subtitle }}</span>
+            <span class="landing-card-cta">Open <i class="icon" data-lucide="arrow-right" aria-hidden="true"></i></span>
+          </a>
+        {% endfor %}
+      </div>
+    </main>
+    <script src="/static/vendor/lucide/lucide.min.js" defer></script>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

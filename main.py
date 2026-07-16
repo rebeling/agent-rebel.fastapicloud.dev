@@ -1,11 +1,20 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.config import BASE_DIR, docs_enabled, edits_enabled
+from app.config import (
+    BASE_DIR,
+    DEFAULT_WIKI_ID,
+    WIKIS,
+    current_wiki,
+    current_wiki_id,
+    docs_enabled,
+    edits_enabled,
+    set_current_wiki,
+)
 from app.db import connect, init_db
 from app.graph import graph_json
 from app.lint import lint_all, lint_for_page, lint_results
@@ -35,9 +44,12 @@ templates = Jinja2Templates(directory=BASE_DIR / "app" / "templates")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    with connect() as conn:
-        init_db(conn)
-        seed_if_empty(conn)
+    for wiki_id in WIKIS:
+        set_current_wiki(wiki_id)
+        with connect() as conn:
+            init_db(conn)
+            seed_if_empty(conn)
+    set_current_wiki(DEFAULT_WIKI_ID)
     yield
 
 
@@ -51,16 +63,46 @@ app = FastAPI(
 )
 app.mount("/static", StaticFiles(directory=BASE_DIR / "app" / "static"), name="static")
 
+wiki_router = APIRouter(prefix="/{wiki_id}")
 
-def db():
+
+class WikiScopeMiddleware:
+    """Pure ASGI middleware: sets the active wiki from the first path segment
+    so downstream sync endpoints inherit it via the copied context."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            segment = scope["path"].strip("/").split("/", 1)[0]
+            set_current_wiki(segment if segment in WIKIS else DEFAULT_WIKI_ID)
+        await self.app(scope, receive, send)
+
+
+app.add_middleware(WikiScopeMiddleware)
+
+
+def wiki_scope(wiki_id: str):
+    if wiki_id not in WIKIS:
+        raise HTTPException(status_code=404, detail="Wiki not found.")
+
+
+def db(wiki_id: str = Depends(wiki_scope)):
     with connect() as conn:
         yield conn
 
 
 def sidebar_context(conn) -> dict:
+    wiki = current_wiki()
     return {
         "groups": grouped_pages(conn),
         "edits_enabled": edits_enabled(),
+        "wiki_id": current_wiki_id(),
+        "base_url": f"/{current_wiki_id()}",
+        "wiki_title": wiki["title"],
+        "wiki_subtitle": wiki["subtitle"],
+        "wikis": WIKIS,
     }
 
 
@@ -68,7 +110,9 @@ def render_page_context(conn, slug: str) -> dict:
     page = get_page(conn, slug)
     if not page:
         raise HTTPException(status_code=404, detail="Page not found.")
-    html = render_markdown(page["body_markdown"], known_slugs(conn))
+    html = render_markdown(
+        page["body_markdown"], known_slugs(conn), base_slug=page["slug"]
+    )
     return {
         "page": page,
         "body_html": html,
@@ -80,6 +124,20 @@ def render_page_context(conn, slug: str) -> dict:
 
 
 @app.get("/", response_class=HTMLResponse)
+def landing(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "landing.html",
+        {"wikis": WIKIS},
+    )
+
+
+@app.get("/wiki/{slug:path}")
+def legacy_wiki_redirect(slug: str):
+    return RedirectResponse(f"/{DEFAULT_WIKI_ID}/wiki/{slug}", status_code=301)
+
+
+@wiki_router.get("/", response_class=HTMLResponse)
 def home(request: Request, q: str = "", conn=Depends(db)):
     if q.strip():
         results = search_pages(conn, q)
@@ -92,13 +150,13 @@ def home(request: Request, q: str = "", conn=Depends(db)):
     return templates.TemplateResponse(request, "page.html", context)
 
 
-@app.get("/wiki/{slug:path}", response_class=HTMLResponse)
+@wiki_router.get("/wiki/{slug:path}", response_class=HTMLResponse)
 def wiki_page(request: Request, slug: str, conn=Depends(db)):
     context = render_page_context(conn, slug)
     return templates.TemplateResponse(request, "page.html", context)
 
 
-@app.get("/edit/{slug:path}", response_class=HTMLResponse)
+@wiki_router.get("/edit/{slug:path}", response_class=HTMLResponse)
 def edit_page(request: Request, slug: str, conn=Depends(db)):
     if not edits_enabled():
         raise HTTPException(status_code=403, detail="Editing is disabled.")
@@ -122,7 +180,7 @@ def edit_page(request: Request, slug: str, conn=Depends(db)):
     )
 
 
-@app.post("/edit/{slug:path}")
+@wiki_router.post("/edit/{slug:path}")
 def save_edited_page(
     request: Request,
     slug: str,
@@ -160,17 +218,24 @@ def save_edited_page(
         return templates.TemplateResponse(
             request,
             "edit.html",
-            {"page": page, "document": document, "errors": [str(exc)], **sidebar_context(conn)},
+            {
+                "page": page,
+                "document": document,
+                "errors": [str(exc)],
+                **sidebar_context(conn),
+            },
             status_code=400,
         )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     lint_all(conn)
     conn.commit()
-    return RedirectResponse(f"/wiki/{page['slug']}", status_code=303)
+    return RedirectResponse(
+        f"/{current_wiki_id()}/wiki/{page['slug']}", status_code=303
+    )
 
 
-@app.get("/history/{slug:path}", response_class=HTMLResponse)
+@wiki_router.get("/history/{slug:path}", response_class=HTMLResponse)
 def history(request: Request, slug: str, conn=Depends(db)):
     page = get_page(conn, slug)
     if not page:
@@ -178,11 +243,15 @@ def history(request: Request, slug: str, conn=Depends(db)):
     return templates.TemplateResponse(
         request,
         "history.html",
-        {"page": page, "revisions": revisions(conn, page["id"]), **sidebar_context(conn)},
+        {
+            "page": page,
+            "revisions": revisions(conn, page["id"]),
+            **sidebar_context(conn),
+        },
     )
 
 
-@app.get("/diff/{revision_number:int}/{slug:path}", response_class=HTMLResponse)
+@wiki_router.get("/diff/{revision_number:int}/{slug:path}", response_class=HTMLResponse)
 def diff(request: Request, revision_number: int, slug: str, conn=Depends(db)):
     page = get_page(conn, slug)
     if not page:
@@ -193,11 +262,16 @@ def diff(request: Request, revision_number: int, slug: str, conn=Depends(db)):
     return templates.TemplateResponse(
         request,
         "diff.html",
-        {"page": page, "revision_number": revision_number, "diff": diff_text, **sidebar_context(conn)},
+        {
+            "page": page,
+            "revision_number": revision_number,
+            "diff": diff_text,
+            **sidebar_context(conn),
+        },
     )
 
 
-@app.get("/lint", response_class=HTMLResponse)
+@wiki_router.get("/lint", response_class=HTMLResponse)
 def lint_report(request: Request, conn=Depends(db)):
     lint_all(conn)
     conn.commit()
@@ -208,7 +282,7 @@ def lint_report(request: Request, conn=Depends(db)):
     )
 
 
-@app.get("/log", response_class=HTMLResponse)
+@wiki_router.get("/log", response_class=HTMLResponse)
 def log_view(request: Request, conn=Depends(db)):
     return templates.TemplateResponse(
         request,
@@ -217,7 +291,7 @@ def log_view(request: Request, conn=Depends(db)):
     )
 
 
-@app.get("/sources", response_class=HTMLResponse)
+@wiki_router.get("/sources", response_class=HTMLResponse)
 def sources_view(request: Request, conn=Depends(db)):
     source_document = "\n".join(
         [
@@ -233,11 +307,16 @@ def sources_view(request: Request, conn=Depends(db)):
     return templates.TemplateResponse(
         request,
         "sources.html",
-        {"sources": list_sources(conn), "source_document": source_document, "errors": [], **sidebar_context(conn)},
+        {
+            "sources": list_sources(conn),
+            "source_document": source_document,
+            "errors": [],
+            **sidebar_context(conn),
+        },
     )
 
 
-@app.post("/sources")
+@wiki_router.post("/sources")
 def ingest_source(
     request: Request,
     document: str = Form(...),
@@ -259,19 +338,24 @@ def ingest_source(
         return templates.TemplateResponse(
             request,
             "sources.html",
-            {"sources": list_sources(conn), "source_document": document, "errors": [str(exc)], **sidebar_context(conn)},
+            {
+                "sources": list_sources(conn),
+                "source_document": document,
+                "errors": [str(exc)],
+                **sidebar_context(conn),
+            },
             status_code=400,
         )
     conn.commit()
-    return RedirectResponse("/sources", status_code=303)
+    return RedirectResponse(f"/{current_wiki_id()}/sources", status_code=303)
 
 
-@app.get("/graph.json")
+@wiki_router.get("/graph.json")
 def graph(conn=Depends(db)):
     return graph_json(conn)
 
 
-@app.get("/graph", response_class=HTMLResponse)
+@wiki_router.get("/graph", response_class=HTMLResponse)
 def graph_view(request: Request, conn=Depends(db)):
     data = graph_json(conn)
     return templates.TemplateResponse(
@@ -281,8 +365,8 @@ def graph_view(request: Request, conn=Depends(db)):
     )
 
 
-@app.get("/download-zip")
-def download_wiki_zip():
+@wiki_router.get("/download-zip")
+def download_wiki_zip(wiki_id: str = Depends(wiki_scope)):
     import io
     import zipfile
     from app.config import wiki_directory
@@ -299,5 +383,10 @@ def download_wiki_zip():
     return StreamingResponse(
         buffer,
         media_type="application/zip",
-        headers={"Content-Disposition": "attachment; filename=the_agent_knowledge_base.zip"},
+        headers={
+            "Content-Disposition": f"attachment; filename={current_wiki()['zip_name']}"
+        },
     )
+
+
+app.include_router(wiki_router)

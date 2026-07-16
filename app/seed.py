@@ -1,63 +1,78 @@
+from typing import Any, TypedDict
+
 from app.lint import lint_all
 from app.repository import rebuild_all_links, save_page, create_source
 
-SEED_SOURCES = [
+
+class SeedSource(TypedDict):
+    slug: str
+    title: str
+    source_type: str
+    content: str
+    metadata: dict[str, Any]
+
+
+SEED_SOURCES: list[SeedSource] = [
     {
         "slug": "source/google-cloud-agents",
         "title": "Google Cloud: AI agents definition and features",
         "source_type": "article",
         "content": "Google Cloud's official documentation defines AI agents as autonomous entities that leverage Large Language Models to interact with their environment, make decisions, plan workflows, and execute tasks using tools. It highlights reasoning, planning, memory, and tool integration as foundational capabilities for production-ready agents.",
-        "metadata": {"url": "https://cloud.google.com/use-cases/ai-agents"}
+        "metadata": {"url": "https://cloud.google.com/use-cases/ai-agents"},
     },
     {
         "slug": "source/ibm-agents-a2a",
         "title": "IBM: AI agents and A2A protocol",
         "source_type": "article",
         "content": "IBM Think's coverage on AI agents details the emerging Agent-to-Agent (A2A) protocol. It emphasizes how multi-agent collaboration requires standard communication protocols so that agents can register capabilities, discover each other, delegate subtasks, and exchange structured artifacts asynchronously.",
-        "metadata": {"url": "https://www.ibm.com/think/topics/ai-agents"}
+        "metadata": {"url": "https://www.ibm.com/think/topics/ai-agents"},
     },
     {
         "slug": "source/anthropic-mcp",
         "title": "Anthropic: Model Context Protocol (MCP)",
         "source_type": "spec",
         "content": "Anthropic's Model Context Protocol (MCP) defines an open standard for connecting large language models to data sources and tools. MCP establishes client-server boundaries, standardizing how models retrieve context from databases, filesystems, and APIs, avoiding custom integration code.",
-        "metadata": {"url": "https://modelcontextprotocol.io/"}
+        "metadata": {"url": "https://modelcontextprotocol.io/"},
     },
     {
         "slug": "source/openai-agents-sdk",
         "title": "OpenAI Agents SDK concepts",
         "source_type": "documentation",
         "content": "OpenAI's Agents SDK architecture details tool calling, handoffs, and session execution loops. It emphasizes narrow scoping, structured tool definition schemas, and human-in-the-loop triggers for destructive actions to ensure predictable runtime execution.",
-        "metadata": {"url": "https://github.com/openai/openai-agents"}
+        "metadata": {"url": "https://github.com/openai/openai-agents"},
     },
     {
         "slug": "source/databricks-evaluation",
         "title": "Databricks: Agent Evaluation",
         "source_type": "documentation",
         "content": "Databricks' agent evaluation guidelines emphasize assessing the full execution trajectory, not just the final model output. Key metrics include task success, groundedness against retrieved sources, tool parameter accuracy, latency, and cost analysis across iterations.",
-        "metadata": {"url": "https://www.databricks.com/blog/introducing-agent-evaluation"}
+        "metadata": {
+            "url": "https://www.databricks.com/blog/introducing-agent-evaluation"
+        },
     },
     {
         "slug": "source/galileo-failure-modes",
         "title": "Galileo: Agent Failure Modes",
         "source_type": "report",
         "content": "Galileo's research on agent failures outlines classic failure modes including context drift, tool overuse, hallucination cascades, infinite execution loops, and data leakage. It advocates for active logging and automated tests to capture regressions.",
-        "metadata": {"url": "https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging"}
+        "metadata": {
+            "url": "https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging"
+        },
     },
     {
         "slug": "source/weaviate-retrieval-memory",
         "title": "Weaviate: Context Engineering, Retrieval, and Memory",
         "source_type": "documentation",
         "content": "Weaviate's developers guide explores context engineering, RAG, and memory persistence. It draws sharp distinctions between transient context windows (short-term) and external memory indexes (long-term, episodic, semantic, procedural) to optimize search.",
-        "metadata": {"url": "https://weaviate.io/developers/weaviate/concepts/rag"}
+        "metadata": {"url": "https://weaviate.io/developers/weaviate/concepts/rag"},
     },
     {
         "slug": "source/okf-knowledge-catalog",
         "title": "OKF / Google Cloud: Knowledge Catalog",
         "source_type": "spec",
         "content": "The Operational Knowledge Format (OKF) specification details structure for human-readable, machine-parsable documents. Frontmatter metadata combined with semantic wikilinks enables static analyzers and models to traverse knowledge graphs safely.",
-        "metadata": {"url": "https://cloud.google.com/knowledge-catalog"}
-    }
+        "metadata": {"url": "https://cloud.google.com/knowledge-catalog"},
+    },
 ]
 
 SEED_PAGES = [
@@ -108,7 +123,7 @@ Use a bot when the task is simple and rule-based.
 - **Retrieval should happen before planning when the answer depends on specific or changing knowledge.**
 - **Agent evaluation must check the path, not only the final answer.**
 - **If success criteria are unclear, agents loop.**
-"""
+""",
     },
     {
         "slug": "start/reading-path",
@@ -142,7 +157,7 @@ Following a structured reading path ensures you learn core safety and architectu
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "start/agent-decision-checklist",
@@ -174,7 +189,7 @@ Choosing the wrong architecture wastes tokens, increases latency, and introduces
 
 ## References
 - Google Cloud: AI agents. [URL](https://cloud.google.com/use-cases/ai-agents)
-"""
+""",
     },
     {
         "slug": "basics/what-is-an-agent",
@@ -206,7 +221,7 @@ Understanding that an agent is a dynamic, goal-driven control loop prevents deve
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "basics/agent-vs-workflow",
@@ -237,7 +252,7 @@ Mixing up these paradigms results in either overly rigid systems that break, or 
 
 ## References
 - OpenAI Agents SDK. [URL](https://github.com/openai/openai-agents)
-"""
+""",
     },
     {
         "slug": "basics/agent-vs-assistant-vs-bot",
@@ -268,7 +283,7 @@ Mismatched expectations lead to either critical security breaches (giving agents
 
 ## References
 - Google Cloud: AI agents. [URL](https://cloud.google.com/use-cases/ai-agents)
-"""
+""",
     },
     {
         "slug": "basics/the-illusion-of-agents",
@@ -299,7 +314,7 @@ Over-trusting generated reasoning leads developers to bypass automated validatio
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "types/agent-types-overview",
@@ -335,7 +350,7 @@ Giving an agent too many tools or too broad a mandate increases the likelihood o
 ## Related pages
 - [[types/coding-agent]]
 - [[types/multi-agent-system]]
-"""
+""",
     },
     {
         "slug": "types/coding-agent",
@@ -367,7 +382,7 @@ Unchecked code generation creates broken dependencies, syntax errors, and securi
 
 ## References
 - OpenAI Agents SDK. [URL](https://github.com/openai/openai-agents)
-"""
+""",
     },
     {
         "slug": "types/research-agent",
@@ -398,7 +413,7 @@ Unverified research outputs propagate false facts. Building strict grounding che
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "types/support-agent",
@@ -429,7 +444,7 @@ A rogue support agent can delete customer accounts, leak private details, or pro
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "types/data-agent",
@@ -460,7 +475,7 @@ Poorly constrained SQL generation can cause table locks, leak sensitive datasets
 
 ## References
 - Databricks: Agent Evaluation. [URL](https://www.databricks.com/blog/introducing-agent-evaluation)
-"""
+""",
     },
     {
         "slug": "types/background-agent",
@@ -491,7 +506,7 @@ Undetected errors in background agents can run up huge API bills or corrupt data
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "types/multi-agent-system",
@@ -522,7 +537,7 @@ Dividing complex goals among specialized agents prevents context window bloating
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "capabilities/capabilities-overview",
@@ -559,7 +574,7 @@ An agent runtime is only as robust as its weakest capability. Separating and mea
 ## Related pages
 - [[capabilities/planning]]
 - [[capabilities/tool-use]]
-"""
+""",
     },
     {
         "slug": "capabilities/reasoning",
@@ -590,7 +605,7 @@ Without reasoning, the agent simply matches patterns without verifying if they m
 
 ## References
 - Anthropic: MCP. [URL](https://modelcontextprotocol.io/)
-"""
+""",
     },
     {
         "slug": "capabilities/planning",
@@ -621,7 +636,7 @@ Unplanned execution leads to repetitive actions, high costs, and task failures.
 
 ## References
 - OpenAI Agents SDK. [URL](https://github.com/openai/openai-agents)
-"""
+""",
     },
     {
         "slug": "capabilities/observation",
@@ -652,7 +667,7 @@ Without accurate observation parsing, the agent cannot determine if its last act
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "capabilities/tool-use",
@@ -683,7 +698,7 @@ Tool access is what transforms a language model from a generator into an active 
 
 ## References
 - Anthropic: MCP. [URL](https://modelcontextprotocol.io/)
-"""
+""",
     },
     {
         "slug": "capabilities/retrieval",
@@ -714,7 +729,7 @@ Grounded retrieval avoids hallucinations. Retrieval should happen before plannin
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "capabilities/memory",
@@ -745,7 +760,7 @@ Without memory, agents treat every user session as starting from scratch.
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "capabilities/collaboration",
@@ -776,7 +791,7 @@ Complex tasks require coordination between specialized entities.
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "memory/context-vs-memory",
@@ -813,7 +828,7 @@ Failing to split context and memory leads to bloated prompts, slow models, high 
 ## Related pages
 - [[memory/context-window]]
 - [[memory/long-term-memory]]
-"""
+""",
     },
     {
         "slug": "memory/context-window",
@@ -844,7 +859,7 @@ Model attention degrades when the context window is full, causing critical instr
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "memory/short-term-memory",
@@ -875,7 +890,7 @@ Ensures conversational continuity without requiring database fetches every singl
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "memory/long-term-memory",
@@ -906,7 +921,7 @@ Allows systems to recall historical constraints, preventing redundant configurat
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "memory/episodic-memory",
@@ -937,7 +952,7 @@ Enables agents to learn from past errors by looking up identical problem context
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "memory/semantic-memory",
@@ -968,7 +983,7 @@ Keeps domain knowledge separated from conversational chat history, simplifying r
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "memory/procedural-memory",
@@ -999,7 +1014,7 @@ Allows agents to execute complex, multi-tool tasks efficiently by recalling succ
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "memory/memory-risks",
@@ -1030,7 +1045,7 @@ Unmanaged memory turns agents into compliance risks and inflates API token costs
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "protocols/protocols-overview",
@@ -1065,7 +1080,7 @@ Without structured protocols, multi-agent systems devolve into custom glue code 
 ## Related pages
 - [[protocols/model-context-protocol]]
 - [[protocols/agent2agent]]
-"""
+""",
     },
     {
         "slug": "protocols/model-context-protocol",
@@ -1096,7 +1111,7 @@ Standardizing access allows a model to use any server-compatible tool without wr
 
 ## References
 - Anthropic: MCP. [URL](https://modelcontextprotocol.io/)
-"""
+""",
     },
     {
         "slug": "protocols/agent2agent",
@@ -1127,7 +1142,7 @@ Enables complex, distributed workflows where specialized agents handle sub-probl
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "protocols/agent-communication-protocol",
@@ -1158,7 +1173,7 @@ Ensures reliable message delivery and tracing across asynchronous systems.
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "protocols/tool-calling",
@@ -1189,7 +1204,7 @@ Strict schemas prevent arbitrary text inputs from hitting backend databases or A
 
 ## References
 - OpenAI Agents SDK. [URL](https://github.com/openai/openai-agents)
-"""
+""",
     },
     {
         "slug": "protocols/handoffs",
@@ -1220,7 +1235,7 @@ Smooth handoffs prevent user frustration and keep operations safe.
 
 ## References
 - Google Cloud: AI agents. [URL](https://cloud.google.com/use-cases/ai-agents)
-"""
+""",
     },
     {
         "slug": "knowledge/knowledge-overview",
@@ -1255,7 +1270,7 @@ Relying on model parameters for specific software logic leads to code drift and 
 ## Related pages
 - [[knowledge/okf-and-rag]]
 - [[knowledge/source-grounding]]
-"""
+""",
     },
     {
         "slug": "knowledge/okf-and-rag",
@@ -1286,7 +1301,7 @@ Standardizing schemas allows tools to easily parse metadata and verify document 
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "knowledge/source-grounding",
@@ -1317,7 +1332,7 @@ Grounded claims allow humans to audit agent suggestions instantly.
 
 ## References
 - Databricks: Agent Evaluation. [URL](https://www.databricks.com/blog/introducing-agent-evaluation)
-"""
+""",
     },
     {
         "slug": "knowledge/stale-knowledge",
@@ -1348,7 +1363,7 @@ Confidently wrong outputs are worse than admitting ignorance.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "knowledge/decision-records",
@@ -1379,7 +1394,7 @@ Keeps agents from proposing changes that violate established project decisions.
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "knowledge/knowledge-ingestion",
@@ -1410,7 +1425,7 @@ Ensures standard tags are created, allowing models to search precisely.
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "strategies/strategies-overview",
@@ -1446,7 +1461,7 @@ Without clear loop boundaries, agents will default to unbounded execution, gener
 ## Related pages
 - [[strategies/retrieval-first]]
 - [[strategies/human-in-the-loop]]
-"""
+""",
     },
     {
         "slug": "strategies/retrieval-first",
@@ -1477,7 +1492,7 @@ Planning from memory leads to obsolete steps. Fetching facts first guarantees ac
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "strategies/narrow-agent-scope",
@@ -1508,7 +1523,7 @@ Broad scopes lead to tool misuse, planning drift, and infinite execution loops.
 
 ## References
 - Google Cloud: AI agents. [URL](https://cloud.google.com/use-cases/ai-agents)
-"""
+""",
     },
     {
         "slug": "strategies/human-in-the-loop",
@@ -1539,7 +1554,7 @@ Prevents irreversible losses (deleting files, moving money) before human validat
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "strategies/plan-and-execute",
@@ -1570,7 +1585,7 @@ Saves tokens by avoiding planning overhead at every single step.
 
 ## References
 - OpenAI Agents SDK. [URL](https://github.com/openai/openai-agents)
-"""
+""",
     },
     {
         "slug": "strategies/react-loop",
@@ -1601,7 +1616,7 @@ Required for exploring volatile systems where actions change the target state.
 
 ## References
 - OpenAI Agents SDK. [URL](https://github.com/openai/openai-agents)
-"""
+""",
     },
     {
         "slug": "strategies/fail-safe-actions",
@@ -1632,7 +1647,7 @@ Prevents runaway retries from running up bills.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "evaluation/evaluation-overview",
@@ -1668,7 +1683,7 @@ Evaluating only final answers hides loop errors, tool parameter hallucinations, 
 ## Related pages
 - [[evaluation/trajectory-evaluation]]
 - [[evaluation/regression-tests]]
-"""
+""",
     },
     {
         "slug": "evaluation/task-success",
@@ -1699,7 +1714,7 @@ Provides the primary baseline metric for user experience.
 
 ## References
 - Databricks: Agent Evaluation. [URL](https://www.databricks.com/blog/introducing-agent-evaluation)
-"""
+""",
     },
     {
         "slug": "evaluation/groundedness",
@@ -1730,7 +1745,7 @@ Ungrounded statements lead to system distrust.
 
 ## References
 - Databricks: Agent Evaluation. [URL](https://www.databricks.com/blog/introducing-agent-evaluation)
-"""
+""",
     },
     {
         "slug": "evaluation/tool-use-quality",
@@ -1761,7 +1776,7 @@ Prevents tool over-use and parameter drift.
 
 ## References
 - Anthropic: MCP. [URL](https://modelcontextprotocol.io/)
-"""
+""",
     },
     {
         "slug": "evaluation/trajectory-evaluation",
@@ -1792,7 +1807,7 @@ Essential for detecting infinite loops and redundant work.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "evaluation/cost-and-latency",
@@ -1823,7 +1838,7 @@ High costs or slow runs render agents commercially useless.
 
 ## References
 - Databricks: Agent Evaluation. [URL](https://www.databricks.com/blog/introducing-agent-evaluation)
-"""
+""",
     },
     {
         "slug": "evaluation/regression-tests",
@@ -1854,7 +1869,7 @@ Ensures updates do not reintroduce old bugs.
 
 ## References
 - Databricks: Agent Evaluation. [URL](https://www.databricks.com/blog/introducing-agent-evaluation)
-"""
+""",
     },
     {
         "slug": "failures/failure-modes-overview",
@@ -1891,7 +1906,7 @@ Identifying failure signatures allows developers to write automated validators a
 ## Related pages
 - [[failures/infinite-loops]]
 - [[failures/context-drift]]
-"""
+""",
     },
     {
         "slug": "failures/context-drift",
@@ -1922,7 +1937,7 @@ Leads to irrelevant actions and task abandonment.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "failures/tool-overuse",
@@ -1953,7 +1968,7 @@ Inflates token costs and execution time.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "failures/hallucination-cascade",
@@ -1984,7 +1999,7 @@ Output appears logical but is completely detached from reality.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "failures/hallucinated-tools",
@@ -2015,7 +2030,7 @@ Causes immediate code crashes unless schema validation blocks them.
 
 ## References
 - Anthropic: MCP. [URL](https://modelcontextprotocol.io/)
-"""
+""",
     },
     {
         "slug": "failures/stale-memory",
@@ -2046,7 +2061,7 @@ Keeps agents from adopting new directions.
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "failures/infinite-loops",
@@ -2077,7 +2092,7 @@ Exhausts rate limits and budgets.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "failures/data-leakage",
@@ -2108,7 +2123,7 @@ Violates privacy policies and data regulations.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "examples/examples-overview",
@@ -2141,7 +2156,7 @@ Concrete layouts teach configuration patterns better than abstract strategies.
 ## Related pages
 - [[examples/coding-agent-example]]
 - [[types/agent-types-overview]]
-"""
+""",
     },
     {
         "slug": "examples/coding-agent-example",
@@ -2172,7 +2187,7 @@ Shows practical integration of tool boundaries.
 
 ## References
 - Anthropic: MCP. [URL](https://modelcontextprotocol.io/)
-"""
+""",
     },
     {
         "slug": "examples/research-agent-example",
@@ -2203,7 +2218,7 @@ Demonstrates source grounding in action.
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "examples/support-agent-example",
@@ -2234,7 +2249,7 @@ Teaches how to build human gates.
 
 ## References
 - IBM: AI agents. [URL](https://www.ibm.com/think/topics/ai-agents)
-"""
+""",
     },
     {
         "slug": "meta/use-okf",
@@ -2267,7 +2282,7 @@ Keeps pages auditable, preventing knowledge decay.
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "meta/wiki-workflow",
@@ -2301,7 +2316,7 @@ Ensures the knowledge base remains healthy and up to date.
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "meta/lint-rules",
@@ -2331,7 +2346,7 @@ Prevents structural decay of the knowledge graph.
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "meta/sources",
@@ -2362,7 +2377,7 @@ Auditable citations ensure that developers can trace wiki recommendations back t
 
 ## Related pages
 - [[meta/wiki-workflow]]
-"""
+""",
     },
     {
         "slug": "tools/qdrant",
@@ -2393,7 +2408,7 @@ Crucial for scaling retrieval over large datasets, though simple wikis can use b
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "tools/cognee",
@@ -2424,7 +2439,7 @@ Keeps agents from losing complex relational state.
 
 ## References
 - Weaviate: Context Engineering. [URL](https://weaviate.io/developers/weaviate/concepts/rag)
-"""
+""",
     },
     {
         "slug": "meta/okf-internals",
@@ -2454,7 +2469,7 @@ Helps developers debug database insertions.
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "meta/self-describing-wiki",
@@ -2484,7 +2499,7 @@ Showcases how models interact with structured knowledge nodes.
 
 ## References
 - OKF Catalog. [URL](https://cloud.google.com/knowledge-catalog)
-"""
+""",
     },
     {
         "slug": "meta/error-book",
@@ -2514,7 +2529,7 @@ Ensures continuous improvement of content.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
+""",
     },
     {
         "slug": "meta/operation-log",
@@ -2544,8 +2559,8 @@ Critical for trace audits.
 
 ## References
 - Galileo: Agent Failure Modes. [URL](https://www.rungalileo.io/blog/mastering-agent-evaluation-and-debugging)
-"""
-    }
+""",
+    },
 ]
 
 
@@ -2556,8 +2571,12 @@ def sync_wiki_from_disk(conn) -> None:
     wiki_dir = wiki_directory()
     wiki_dir.mkdir(parents=True, exist_ok=True)
 
+    from app.config import current_wiki_id
+
+    is_agent_wiki = current_wiki_id() == "agent"
+
     md_files = list(wiki_dir.glob("**/*.md"))
-    if not md_files:
+    if not md_files and is_agent_wiki:
         for page in SEED_PAGES:
             slug = page["slug"]
             file_path = wiki_dir / f"{slug}.md"
@@ -2595,8 +2614,24 @@ def sync_wiki_from_disk(conn) -> None:
             print(f"Error syncing {file_path}: {e}")
 
     conn.execute("DELETE FROM sources")
-    for source in SEED_SOURCES:
-        create_source(conn, **source)
+    if is_agent_wiki:
+        for source in SEED_SOURCES:
+            create_source(conn, **source)
+    else:
+        sources_dir = wiki_dir.parent / "sources"
+        if sources_dir.is_dir():
+            for file_path in sorted(sources_dir.glob("*.md")):
+                try:
+                    okf = parse_okf(file_path.read_text(encoding="utf-8"))
+                    create_source(
+                        conn,
+                        slug=f"source/{file_path.stem}",
+                        title=okf.title,
+                        source_type=okf.page_type,
+                        content=okf.body_markdown,
+                    )
+                except Exception as e:
+                    print(f"Error ingesting source {file_path}: {e}")
 
     rebuild_all_links(conn)
     lint_all(conn)

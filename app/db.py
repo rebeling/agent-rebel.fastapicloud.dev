@@ -102,7 +102,9 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 
 def ensure_page_nav_columns(conn: sqlite3.Connection) -> None:
-    existing_columns = {row["name"] for row in conn.execute("PRAGMA table_info(pages)").fetchall()}
+    existing_columns = {
+        row["name"] for row in conn.execute("PRAGMA table_info(pages)").fetchall()
+    }
     nav_columns = {
         "section": "TEXT",
         "section_title": "TEXT",

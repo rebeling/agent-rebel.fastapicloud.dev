@@ -7,7 +7,14 @@ from app.db import connect, init_db
 from app.graph import graph_json
 from app.lint import lint_all, lint_results
 from app.markdown import render_markdown
-from app.repository import backlinks, get_page, grouped_pages, outgoing_links, revisions, save_page
+from app.repository import (
+    backlinks,
+    get_page,
+    grouped_pages,
+    outgoing_links,
+    revisions,
+    save_page,
+)
 from app.seed import seed_if_empty
 from app.okf import OKFError, page_to_okf, parse_okf, parse_source_okf
 from app.wikilinks import extract_wikilinks, normalize_slug
@@ -32,7 +39,7 @@ class WikiCoreTest(unittest.TestCase):
 
     def test_seed_creates_index_and_links(self):
         page = get_page(self.conn, "index")
-        self.assertIsNotNone(page)
+        assert page is not None
         self.assertEqual(page["title"], "The Agent Wiki")
         links = outgoing_links(self.conn, page["id"])
         self.assertGreaterEqual(len(links), 8)
@@ -55,7 +62,9 @@ class WikiCoreTest(unittest.TestCase):
     def test_wikilink_extraction_and_slug_safety(self):
         links = extract_wikilinks("[[strategies/retrieval-first|Retrieval first]]")
         self.assertEqual(links[0]["target_slug"], "strategies/retrieval-first")
-        self.assertEqual(normalize_slug("Strategies Retrieval First"), "strategies-retrieval-first")
+        self.assertEqual(
+            normalize_slug("Strategies Retrieval First"), "strategies-retrieval-first"
+        )
         with self.assertRaises(ValueError):
             normalize_slug("../secret")
 
@@ -74,8 +83,53 @@ class WikiCoreTest(unittest.TestCase):
         )
         self.assertIn("<code>https://code.example.com</code>", html)
 
+    def test_render_markdown_tables(self):
+        html = render_markdown(
+            "| Product | Self-host |\n|---|---:|\n| [LiteLLM](../providers/litellm.md) | yes |\n| Kong | no |",
+            {"providers/litellm"},
+            base_slug="comparisons/feature-matrix",
+        )
+        self.assertIn('<div class="table-wrap"><table>', html)
+        self.assertIn('<th style="text-align:left">Product</th>', html)
+        self.assertIn('<th style="text-align:right">Self-host</th>', html)
+        self.assertIn(
+            '<a class="wiki-link" href="/agent/wiki/providers/litellm">LiteLLM</a>',
+            html,
+        )
+        self.assertIn('<td style="text-align:left">Kong</td>', html)
+
+    def test_render_markdown_mermaid_block(self):
+        html = render_markdown(
+            "```mermaid\nflowchart TD\n    A --> B\n```",
+            set(),
+        )
+        self.assertIn('<pre class="mermaid">flowchart TD\n    A --&gt; B</pre>', html)
+        self.assertNotIn("<code>", html)
+
+    def test_render_markdown_plain_code_block_unchanged(self):
+        html = render_markdown("```python\nprint(1)\n```", set())
+        self.assertIn("<pre><code>print(1)</code></pre>", html)
+
+    def test_resolve_relative_md_links(self):
+        from app.markdown import resolve_relative_md_link
+
+        self.assertEqual(
+            resolve_relative_md_link(
+                "../providers/litellm.md", "comparisons/feature-matrix"
+            ),
+            "providers/litellm",
+        )
+        self.assertEqual(
+            resolve_relative_md_link(
+                "landscape-map.md", "catalog/llm-proxy-knowledge-base"
+            ),
+            "catalog/landscape-map",
+        )
+        self.assertIsNone(resolve_relative_md_link("https://example.com/x.md", "a/b"))
+
     def test_okf_parse_and_serialize(self):
         page = get_page(self.conn, "strategies/retrieval-first")
+        assert page is not None
         document = page_to_okf(page)
         parsed = parse_okf(document)
         self.assertEqual(parsed.title, "Retrieval First")
@@ -138,7 +192,9 @@ tags:
         groups = grouped_pages(self.conn)
         first_group = next(iter(groups.items()))
         self.assertEqual(first_group[0], "Ordered")
-        self.assertEqual([page["title"] for page in first_group[1]], ["Earlier", "Later"])
+        self.assertEqual(
+            [page["title"] for page in first_group[1]], ["Earlier", "Later"]
+        )
 
     def test_source_okf_parse(self):
         source = parse_source_okf(
@@ -160,6 +216,7 @@ Raw material.
 
     def test_backlinks_are_available(self):
         target = get_page(self.conn, "basics/what-is-an-agent")
+        assert target is not None
         incoming = backlinks(self.conn, target["id"])
         incoming_slugs = {link["from_slug"] for link in incoming}
         self.assertIn("index", incoming_slugs)
@@ -176,18 +233,24 @@ Raw material.
             change_summary="Create repeated links test.",
         )
         page = get_page(self.conn, "tests/repeated-links")
+        assert page is not None
         links = outgoing_links(self.conn, page["id"])
         by_slug = {link["target_slug"]: link for link in links}
 
         self.assertEqual([link["target_slug"] for link in links].count("index"), 1)
         self.assertEqual(by_slug["index"]["link_count"], 2)
-        self.assertEqual([link["target_slug"] for link in links].count("missing/page"), 1)
+        self.assertEqual(
+            [link["target_slug"] for link in links].count("missing/page"), 1
+        )
         self.assertEqual(by_slug["missing/page"]["link_count"], 2)
         self.assertTrue(by_slug["missing/page"]["is_broken"])
 
         index = get_page(self.conn, "index")
+        assert index is not None
         incoming = backlinks(self.conn, index["id"])
-        repeated = [link for link in incoming if link["from_slug"] == "tests/repeated-links"]
+        repeated = [
+            link for link in incoming if link["from_slug"] == "tests/repeated-links"
+        ]
         self.assertEqual(len(repeated), 1)
         self.assertEqual(repeated[0]["link_count"], 2)
 
@@ -219,6 +282,7 @@ Raw material.
             change_summary="First save.",
         )
         page = get_page(self.conn, "tests/revision")
+        assert page is not None
         save_page(
             self.conn,
             slug="tests/revision",

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Sources - The Agent Wiki{% endblock %}
+{% block title %}Sources - {{ wiki_title }}{% endblock %}
 {% block content %}
   <header class="page-header">
     <div>
@@ -8,7 +8,7 @@
       <p class="description">Immutable-ish raw material. MVP stores it; no LLM generation runs yet.</p>
     </div>
   </header>
-  <form class="editor compact" action="/sources" method="post">
+  <form class="editor compact" action="{{ base_url }}/sources" method="post">
     {% if errors %}
       <section class="notice">
         <h2>Source OKF validation</h2>
