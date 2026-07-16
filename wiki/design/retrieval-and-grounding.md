@@ -10,8 +10,6 @@ tags: [agents, retrieval, rag, grounding]
 status: starter
 ---
 
-# Retrieval and Grounding
-
 Retrieval is how an agent gets relevant knowledge before it reasons, answers, or acts.
 
 Grounding is how the system keeps the output tied to visible evidence.

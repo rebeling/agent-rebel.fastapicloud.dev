@@ -10,8 +10,6 @@ tags: [agents, decision, checklist]
 status: starter
 ---
 
-# Agent Decision Checklist
-
 Use this before building an agent. Most systems do not need full agency. Many need a boring workflow, a search UI, or a normal API call.
 
 ## Start with the boring option

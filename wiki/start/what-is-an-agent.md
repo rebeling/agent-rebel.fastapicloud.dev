@@ -10,8 +10,6 @@ tags: [agents, basics]
 status: starter
 ---
 
-# What Is an Agent?
-
 An agent is a goal-directed software system that can choose actions, use tools, observe results, and adapt its next step.
 
 A simple LLM call answers one prompt. An agent runs a loop: understand the goal, decide what to do, act, observe the result, update the state, and continue until it reaches a stop condition.

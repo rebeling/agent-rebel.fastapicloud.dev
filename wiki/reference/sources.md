@@ -10,8 +10,6 @@ tags: [sources, meta]
 status: starter
 ---
 
-# Sources
-
 This starter uses a small set of current, useful sources. Keep this page short and curated.
 
 ## Core definitions

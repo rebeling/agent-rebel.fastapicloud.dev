@@ -10,8 +10,6 @@ tags: [llm-wiki, okf, karpathy, markdown, human-agent-loop, knowledge-format]
 status: starter
 ---
 
-# LLM Wiki and OKF
-
 The Agent Wiki is not only a wiki about agents. It is also a small experiment in the **LLM Wiki** pattern.
 
 The idea is simple:

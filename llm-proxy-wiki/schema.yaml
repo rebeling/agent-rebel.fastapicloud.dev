@@ -1,0 +1,60 @@
+version: 1
+name: llm-proxy-wiki
+description: Typed Markdown pages for an inspectable LLM proxy knowledge base.
+
+required:
+  - title
+  - type
+  - summary
+  - status
+  - updated
+  - tags
+  - related
+  - sources
+
+allowed_types:
+  - catalog
+  - concept
+  - architecture
+  - governance
+  - provider
+  - comparison
+  - decision
+  - guide
+  - failure
+  - example
+  - meta
+  - source
+
+status_values:
+  - draft
+  - reviewed
+  - stale
+  - deprecated
+
+field_rules:
+  title:
+    type: string
+  type:
+    type: enum
+  summary:
+    type: string
+  status:
+    type: enum
+  updated:
+    type: date
+  tags:
+    type: list[string]
+  related:
+    type: list[path]
+  sources:
+    type: list[source_id]
+
+link_policy:
+  broken_internal_links: warning
+  orphan_pages: warning
+  missing_sources_on_provider_pages: error
+  stale_after_days:
+    provider: 90
+    comparison: 90
+    concept: 365

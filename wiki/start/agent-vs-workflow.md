@@ -10,8 +10,6 @@ tags: [agents, workflows, architecture]
 status: starter
 ---
 
-# Agent vs Workflow
-
 A workflow follows predefined steps. An agent chooses the next step dynamically.
 
 This is the most important distinction in the wiki.

@@ -10,8 +10,6 @@ tags: [agents, types]
 status: starter
 ---
 
-# Agent Types
-
 There is no single perfect taxonomy for agents. Use types as design hints, not as strict boxes.
 
 ## By interaction style

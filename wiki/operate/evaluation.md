@@ -10,8 +10,6 @@ tags: [agents, evaluation, observability]
 status: starter
 ---
 
-# Evaluation
-
 Agent evaluation must inspect both the final answer and the path used to produce it.
 
 A normal LLM evaluation might ask: “Was the final answer correct?”

@@ -10,8 +10,6 @@ tags: [agents, failure-modes, safety]
 status: starter
 ---
 
-# Failure Modes
-
 Agents fail differently from normal software. The code may work, the API may respond, and the final answer may still be wrong because the agent chose the wrong path.
 
 ## 1. Missing context

@@ -10,10 +10,6 @@ tags: [agents, starter, field-guide]
 status: compact-starter
 ---
 
-# The Agent Wiki
-
-A compact field guide for understanding, designing, and evaluating AI agents.
-
 This wiki starts small on purpose. It is not trying to cover every framework, every vendor, or every protocol. It gives builders a clean path through the core questions: **what is an agent, when should you use one, what does it need, and how does it fail?**
 
 ## Start

@@ -10,8 +10,6 @@ tags: [agents, strategy, design]
 status: starter
 ---
 
-# Design Strategies
-
 Start with control. Add autonomy only where it clearly improves the task.
 
 ## 1. Narrow the scope

@@ -10,8 +10,6 @@ tags: [agents, protocols, tools]
 status: starter
 ---
 
-# Protocols and Tool Access
-
 Protocols define how agent systems connect to tools, data, and other agents.
 
 The important distinction:

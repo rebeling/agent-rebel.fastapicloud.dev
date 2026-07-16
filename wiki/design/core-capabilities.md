@@ -10,8 +10,6 @@ tags: [agents, capabilities]
 status: starter
 ---
 
-# Core Capabilities
-
 An agent is not defined by one feature. It is a combination of capabilities arranged in a loop.
 
 ## 1. Reasoning

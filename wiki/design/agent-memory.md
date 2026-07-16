@@ -10,8 +10,6 @@ tags: [agents, memory, context, retrieval, llm-wiki]
 status: starter
 ---
 
-# Agent Memory
-
 Agent memory is information an agent can store and recall later.
 
 It is not the same as the context window. Context is what the model can see right now. Memory is what the surrounding system can keep, search, update, delete, and reuse across sessions.

@@ -10,8 +10,6 @@ tags: [agents, coding, example]
 status: starter
 ---
 
-# Coding Agent
-
 A coding agent helps modify a codebase. It can inspect files, plan changes, edit code, run tests, and explain the result.
 
 ## Goal
